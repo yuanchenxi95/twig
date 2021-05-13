@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+
+package com.yuanchenxi95.model;
+
+option java_package = "com.yuanchenxi95.protobuf.protobuf.api";
+option java_outer_classname = "TwigApiErrorProto";
+
+message TwigApiError {
+    enum ErrorType {
+        UNSPECIFIED = 0;
+        UNKNOWN = 1;
+        INTERNAL_SERVER_ERROR = 2;
+        NOT_FOUND = 3;
+        BAD_REQUEST = 4;
+        AUTHENTICATION_ERROR = 5;
+    }
+
+    uint32 code = 1;
+    ErrorType error_type = 2;
+    string message = 4;
+}
