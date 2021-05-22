@@ -1,0 +1,18 @@
+version: '3.1'
+
+services:
+  db:
+    image: mysql:latest
+    volumes:
+      - .data:/var/lib/mysql
+    restart: always
+    ports:
+      - '3306:3306'
+    expose:
+      # Opens port 3306 on the container
+      - '3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: twig
+      MYSQL_USER: twig
+      MYSQL_PASSWORD: twig
