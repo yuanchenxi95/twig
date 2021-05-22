@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package com.yuanchenxi95.model;
+
+option java_multiple_files = true;
+option java_package = "com.yuanchenxi95.twig.protobuf.api";
+option java_outer_classname = "BookmarkProto";
+
+message Bookmark {
+    uint64 id = 1;
+    string hostname = 2;
+    string uri = 3;
+    string protocol = 4;
+}
+
+message CreateBookmarkRequest {
+    Bookmark bookmark = 1;
+}
+
+message CreateBookmarkResponse {
+    Bookmark bookmark = 1;
+}
+
+message ListBookmarkRequest {
+    string hostname = 1;
+}
+
+message ListBookmarkResponse {
+    repeated Bookmark bookmarks = 1;
+}
