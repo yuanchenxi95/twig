@@ -2,3 +2,9 @@ server:
   error:
     whitelabel:
       enabled: false
+spring:
+  r2dbc:
+    # MySQL
+    url: 'r2dbc:mysql://localhost:3306/twig'
+    username: 'twig'
+    password: 'twig'
