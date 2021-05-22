@@ -58,22 +58,23 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
+    implementation("com.google.guava:guava:30.1.1-jre")
     implementation("com.google.protobuf", "protobuf-java", protobufJavaVersion)
     implementation("com.google.protobuf", "protobuf-java-util", protobufJavaVersion)
-    implementation("io.grpc", "grpc-stub", grpcVersion)
+    implementation("commons-validator", "commons-validator", "1.7")
+    implementation("dev.miku:r2dbc-mysql")
     implementation("io.grpc", "grpc-protobuf", grpcVersion)
-    implementation("org.springframework.boot", "spring-boot-starter-webflux")
-    implementation("org.springframework.boot", "spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter")
-// 	implementation("org.springframework.boot:spring-boot-starter-web")
-
-    implementation("com.google.guava:guava:30.1.1-jre")
-
+    implementation("io.grpc", "grpc-stub", grpcVersion)
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    testImplementation("org.springframework.boot", "spring-boot-starter-test")
+    implementation("org.springframework.boot", "spring-boot-starter-security")
+    implementation("org.springframework.boot", "spring-boot-starter-webflux")
+    implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+    implementation(kotlin("stdlib"))
+    runtimeOnly("mysql:mysql-connector-java")
     testImplementation("io.projectreactor", "reactor-test")
+    testImplementation("org.springframework.boot", "spring-boot-starter-test")
 }
 
 tasks.withType<KotlinCompile> {
