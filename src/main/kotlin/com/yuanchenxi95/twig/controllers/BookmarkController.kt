@@ -24,7 +24,13 @@ class BookmarkController {
     @PostMapping
     fun createBookmark(@RequestBody request: CreateBookmarkRequest): Mono<CreateBookmarkResponse> {
         val bookmark = request.bookmark
-        return bookmarkRepository.save(StoredBookmark(bookmark.hostname, bookmark.uri, bookmark.protocol))
+        return bookmarkRepository.save(
+            StoredBookmark(
+                hostname = bookmark.hostname,
+                uri = bookmark.uri,
+                protocol = bookmark.protocol
+            )
+        )
             .map {
                 storedBookmark ->
                 val bookmarkCreated = bookmarkConverter.reverse().convert(storedBookmark)

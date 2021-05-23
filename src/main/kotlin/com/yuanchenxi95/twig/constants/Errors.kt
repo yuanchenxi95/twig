@@ -2,7 +2,6 @@ package com.yuanchenxi95.twig.constants
 
 import com.yuanchenxi95.protobuf.protobuf.api.TwigApiError
 
-
 val DEFAULT_TWIG_INTERNAL_ERROR: TwigApiError = TwigApiError.newBuilder()
     .setCode(500)
     .setErrorType(TwigApiError.ErrorType.INTERNAL_SERVER_ERROR)

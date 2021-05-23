@@ -8,7 +8,11 @@ import org.springframework.stereotype.Component
 @Component
 class BookmarkConverter : Converter<Bookmark, StoredBookmark>() {
     override fun doForward(bookmark: Bookmark): StoredBookmark {
-        return StoredBookmark(bookmark.hostname, bookmark.uri, bookmark.protocol)
+        return StoredBookmark(
+            hostname = bookmark.hostname,
+            uri = bookmark.uri,
+            protocol = bookmark.protocol
+        )
     }
 
     override fun doBackward(storedBookmark: StoredBookmark): Bookmark {
