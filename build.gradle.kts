@@ -45,7 +45,7 @@ plugins {
 }
 
 application {
-    mainClassName = "com/yuanchenxi95/twig/TwigApplicationKt"
+    mainClass.set("com/yuanchenxi95/twig/TwigApplicationKt")
 }
 
 group = "com.yuanchenxi95"
@@ -67,6 +67,7 @@ dependencies {
     implementation("io.grpc", "grpc-stub", grpcVersion)
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.springframework.boot", "spring-boot-configuration-processor")
     implementation("org.springframework.boot", "spring-boot-starter-security")
     implementation("org.springframework.boot", "spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter")
@@ -74,7 +75,9 @@ dependencies {
     implementation(kotlin("stdlib"))
     runtimeOnly("mysql:mysql-connector-java")
     testImplementation("io.projectreactor", "reactor-test")
+    testImplementation("junit", "junit", "4.13.1")
     testImplementation("org.springframework.boot", "spring-boot-starter-test")
+    testImplementation("org.springframework.security", "spring-security-test")
 }
 
 tasks.withType<KotlinCompile> {

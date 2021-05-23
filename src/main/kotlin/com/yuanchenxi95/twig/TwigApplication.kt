@@ -1,16 +1,12 @@
 package com.yuanchenxi95.twig
 
-import io.r2dbc.spi.ConnectionFactory
-import org.springframework.beans.factory.annotation.Qualifier
+import com.yuanchenxi95.twig.application.TwigConfigurations
 import org.springframework.boot.Banner
 import org.springframework.boot.WebApplicationType
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.web.reactive.error.ErrorWebFluxAutoConfiguration
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
-import org.springframework.context.annotation.Bean
-import org.springframework.core.io.ClassPathResource
-import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer
-import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator
 
 @SpringBootApplication(
     exclude = [
@@ -21,17 +17,8 @@ import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator
         ErrorWebFluxAutoConfiguration::class,
     ]
 )
-class TwigApplication {
-    @Bean
-    fun initializer(@Qualifier("connectionFactory") connectionFactory: ConnectionFactory): ConnectionFactoryInitializer {
-        val initializer = ConnectionFactoryInitializer()
-        initializer.setConnectionFactory(connectionFactory)
-
-        initializer.setDatabasePopulator(ResourceDatabasePopulator(ClassPathResource("schema.sql")))
-//        initializer.setDatabaseCleaner(ResourceDatabasePopulator(ClassPathResource("cleanup.sql")))
-        return initializer
-    }
-}
+@EnableConfigurationProperties(TwigConfigurations::class)
+class TwigApplication
 
 fun main(args: Array<String>) {
     runApplication<TwigApplication>(*args) {

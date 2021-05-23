@@ -3,8 +3,13 @@ server:
     whitelabel:
       enabled: false
 spring:
+  profiles:
+    active: development
   r2dbc:
     # MySQL
     url: 'r2dbc:mysql://localhost:3306/twig'
     username: 'twig'
     password: 'twig'
+
+twig:
+  enableDatabaseCleanup: false
