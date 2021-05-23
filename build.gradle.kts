@@ -54,7 +54,6 @@ java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 dependencies {
