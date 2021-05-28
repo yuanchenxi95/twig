@@ -1,0 +1,11 @@
+spring:
+  profiles:
+    active: test
+  r2dbc:
+    # MySQL
+    url: 'r2dbc:mysql://localhost:3306/twig'
+    username: 'twig'
+    password: 'twig'
+
+twig:
+  enableDatabaseCleanup: true

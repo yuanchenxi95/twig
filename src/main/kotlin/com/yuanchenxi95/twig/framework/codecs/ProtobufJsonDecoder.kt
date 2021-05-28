@@ -2,7 +2,6 @@ package com.yuanchenxi95.twig.framework.codecs
 
 import com.google.common.io.ByteStreams
 import com.google.protobuf.Message
-import com.google.protobuf.util.JsonFormat
 import org.reactivestreams.Publisher
 import org.springframework.core.ResolvableType
 import org.springframework.core.codec.Decoder
@@ -67,7 +66,7 @@ class ProtobufJsonDecoder :
             if (bytes.size >= DEFAULT_MESSAGE_MAX_SIZE) {
                 throw ServerWebInputException("Max message size '$DEFAULT_MESSAGE_MAX_SIZE' exceeds.")
             }
-            JsonFormat.parser().merge(String(bytes), builder)
+            decodeProtobuf(String(bytes), builder)
             return builder.build()
         } catch (ex: IOException) {
             // TODO, handle InvalidProtocolBufferException

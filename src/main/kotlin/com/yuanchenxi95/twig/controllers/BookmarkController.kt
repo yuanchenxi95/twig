@@ -1,5 +1,6 @@
 package com.yuanchenxi95.twig.controllers
 
+import com.yuanchenxi95.twig.constants.RequestMappingValues
 import com.yuanchenxi95.twig.converters.BookmarkConverter
 import com.yuanchenxi95.twig.daos.BookmarkRepository
 import com.yuanchenxi95.twig.models.StoredBookmark
@@ -12,7 +13,6 @@ import java.util.stream.Collectors.*
 // TODO(yuanchenxi95), Add request validation modules.
 
 @RestController
-@RequestMapping("/api/bookmark")
 class BookmarkController {
 
     @Autowired
@@ -21,7 +21,7 @@ class BookmarkController {
     @Autowired
     private lateinit var bookmarkConverter: BookmarkConverter
 
-    @PostMapping
+    @PostMapping(RequestMappingValues.CREATE_BOOKMARK)
     fun createBookmark(@RequestBody request: CreateBookmarkRequest): Mono<CreateBookmarkResponse> {
         val bookmark = request.bookmark
         return bookmarkRepository.save(
@@ -38,7 +38,7 @@ class BookmarkController {
             }
     }
 
-    @GetMapping
+    @GetMapping(RequestMappingValues.LIST_BOOKMARK)
     fun listBookmarks(@RequestParam(required = false) hostname: String?): Mono<ListBookmarkResponse> {
         val bookmarkConverterReverse = bookmarkConverter.reverse()
         val storedBookmarks = if (hostname == null) bookmarkRepository.findAll() else

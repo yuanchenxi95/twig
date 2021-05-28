@@ -73,8 +73,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation(kotlin("stdlib"))
     runtimeOnly("mysql:mysql-connector-java")
+    testCompile("com.google.truth.extensions", "truth-proto-extension", "1.1.2")
+    testCompile("io.projectreactor", "reactor-test")
     testImplementation("io.projectreactor", "reactor-test")
     testImplementation("junit", "junit", "4.13.1")
+    testImplementation("org.assertj", "assertj-core", "3.19.0")
     testImplementation("org.springframework.boot", "spring-boot-starter-test")
     testImplementation("org.springframework.security", "spring-security-test")
 }
