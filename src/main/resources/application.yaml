@@ -11,5 +11,8 @@ spring:
     username: 'twig'
     password: 'twig'
 
+sentry:
+  dsn: 'https://4a1d7adfa01f42ecad6092d0f3cd8466@o759320.ingest.sentry.io/5792476'
+
 twig:
   enableDatabaseCleanup: false

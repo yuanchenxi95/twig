@@ -71,6 +71,7 @@ dependencies {
     implementation("org.springframework.boot", "spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+    implementation("io.sentry:sentry-spring-boot-starter:4.3.0")
     implementation(kotlin("stdlib"))
     runtimeOnly("mysql:mysql-connector-java")
     testCompile("com.google.truth.extensions", "truth-proto-extension", "1.1.2")
