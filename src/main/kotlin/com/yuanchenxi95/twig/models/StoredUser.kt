@@ -5,11 +5,10 @@ import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 import java.util.*
 
-@Table("bookmark")
-data class StoredBookmark(
+@Table("user")
+data class StoredUser(
     @Id val id: String,
-    val urlId: String,
-    val userId: String,
+    val userEmail: String,
     val createTime: Instant? = null,
     val updateTime: Instant? = null,
 )

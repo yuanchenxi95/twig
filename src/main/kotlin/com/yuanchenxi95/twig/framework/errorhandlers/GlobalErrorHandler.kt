@@ -1,8 +1,10 @@
-package com.yuanchenxi95.twig.framework.error_handlers
+package com.yuanchenxi95.twig.framework.errorhandlers
 
-import com.yuanchenxi95.twig.constants.DEFAULT_TWIG_INTERNAL_ERROR
+import com.yuanchenxi95.twig.application.TwigConfigurations
+import com.yuanchenxi95.twig.constants.generateInternalServerError
 import com.yuanchenxi95.twig.framework.codecs.encodeProtobufValue
 import io.sentry.Sentry
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -12,6 +14,9 @@ import reactor.core.publisher.Mono
 
 @Component
 class GlobalErrorHandler : ErrorWebExceptionHandler {
+    @Autowired
+    lateinit var twigConfigurations: TwigConfigurations
+
     override fun handle(serverWebExchange: ServerWebExchange, exception: Throwable): Mono<Void> {
         print(exception)
         Sentry.captureException(exception)
@@ -19,7 +24,10 @@ class GlobalErrorHandler : ErrorWebExceptionHandler {
         val bufferFactory = response.bufferFactory()
         response.headers.contentType = MediaType.APPLICATION_JSON
         response.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
-        val dataBuffer = encodeProtobufValue(DEFAULT_TWIG_INTERNAL_ERROR, bufferFactory)
+        val dataBuffer = encodeProtobufValue(
+            generateInternalServerError(exception, twigConfigurations.showInternalServerError),
+            bufferFactory
+        )
         return response.writeWith(Mono.just(dataBuffer))
     }
 }

@@ -1,93 +1,75 @@
 package com.yuanchenxi95.twig.controllers
 
-import com.google.common.truth.Truth.assertThat
-import com.google.common.truth.extensions.proto.ProtoTruth.assertThat
+import com.google.common.truth.extensions.proto.ProtoTruth
+import com.yuanchenxi95.protobuf.protobuf.api.TwigApiError
+import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
 import com.yuanchenxi95.twig.constants.RequestMappingValues
-import com.yuanchenxi95.twig.converters.BookmarkConverter
-import com.yuanchenxi95.twig.daos.BookmarkRepository
-import com.yuanchenxi95.twig.data.API_BOOKMARK_1
-import com.yuanchenxi95.twig.data.API_BOOKMARK_2
-import com.yuanchenxi95.twig.data.STORED_BOOKMARK_1
-import com.yuanchenxi95.twig.data.STORED_BOOKMARK_2
+import com.yuanchenxi95.twig.data.*
 import com.yuanchenxi95.twig.framework.codecs.convertProtobufToJson
+import com.yuanchenxi95.twig.protobuf.api.Bookmark
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkResponse
-import com.yuanchenxi95.twig.protobuf.api.ListBookmarkResponse
+import com.yuanchenxi95.twig.repositories.BookmarkRepository
 import com.yuanchenxi95.twig.utils.getResponse
-import org.junit.jupiter.api.BeforeAll
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.BDDMockito.given
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDetailsServiceAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.context.annotation.Import
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.web.util.DefaultUriBuilderFactory
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
 @WebFluxTest(
     controllers = [BookmarkController::class],
     excludeAutoConfiguration = [ReactiveUserDetailsServiceAutoConfiguration::class, ReactiveSecurityAutoConfiguration::class]
 )
-@Import(BookmarkConverter::class)
+@MockDatabaseConfiguration
 class BookmarkControllerWebClientTests {
     @Autowired
     private lateinit var client: WebTestClient
 
-    @MockBean
+    @Autowired
+    private lateinit var template: R2dbcEntityTemplate
+
+    @Autowired
     private lateinit var bookmarkRepository: BookmarkRepository
 
-    @BeforeAll
+    @BeforeEach
     fun setUp() {
+        template.insert(STORED_USER_1).block()
     }
 
     @Test
     @WithMockUser
-    fun `get all bookmarks`() {
-        val bookmarksFlux = Flux.just(
-            STORED_BOOKMARK_1, STORED_BOOKMARK_2
-        )
-
-        given(bookmarkRepository.findByHostname("example.com"))
-            .willReturn(bookmarksFlux)
-
-        val listBookmarksUri = DefaultUriBuilderFactory().builder()
-            .path(RequestMappingValues.LIST_BOOKMARK)
-            .queryParam("hostname", "example.com")
+    fun `create bookmark with invalid url should fail`() {
+        val request = CreateBookmarkRequest.newBuilder()
+            .setUrl("invalid_url")
             .build()
-
-        val expected = ListBookmarkResponse.newBuilder().addAllBookmarks(listOf(API_BOOKMARK_1, API_BOOKMARK_2))
-            .build()
-
-        val responseSpec = client.get()
-            .uri(listBookmarksUri)
+        val responseSpec = client.post()
+            .uri(RequestMappingValues.CREATE_BOOKMARK)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(convertProtobufToJson(request))
             .exchange()
             .expectStatus()
-            .isOk
-
-        StepVerifier.create(getResponse(responseSpec, ListBookmarkResponse.getDefaultInstance()))
+            .isBadRequest
+        StepVerifier.create(getResponse(responseSpec, TwigApiError.getDefaultInstance()))
             .consumeNextWith {
-                assertThat(it)
-                    .ignoringRepeatedFieldOrder()
-                    .isEqualTo(expected)
+                assertThat(it.message)
+                    .isEqualTo("URL 'invalid_url' is not valid.")
             }
             .verifyComplete()
     }
 
     @Test
     @WithMockUser
-    fun `create bookmark`() {
-        given(bookmarkRepository.save(STORED_BOOKMARK_1.copy(id = null)))
-            .willReturn(Mono.just(STORED_BOOKMARK_1))
-
+    fun `create bookmark with bookmark 1 should success`() {
         val request = CreateBookmarkRequest.newBuilder()
-            .setBookmark(API_BOOKMARK_1.toBuilder().clearId())
+            .setUrl(API_BOOKMARK_1.url)
             .build()
         val responseSpec = client.post()
             .uri(RequestMappingValues.CREATE_BOOKMARK)
@@ -97,12 +79,47 @@ class BookmarkControllerWebClientTests {
             .expectStatus()
             .isOk
 
-        val expected = CreateBookmarkResponse.newBuilder().setBookmark(API_BOOKMARK_1).build()
+        StepVerifier.create(getResponse(responseSpec, CreateBookmarkResponse.getDefaultInstance()))
+            .consumeNextWith {
+                ProtoTruth.assertThat(it.bookmark)
+                    .ignoringFields(Bookmark.ID_FIELD_NUMBER)
+                    .isEqualTo(API_BOOKMARK_1)
+            }
+            .verifyComplete()
+
+        StepVerifier.create(bookmarkRepository.findAll().collectList())
+            .consumeNextWith {
+                assertThat(it.size).isEqualTo(1)
+            }
+            .verifyComplete()
+    }
+
+    @Test
+    @WithMockUser
+    fun `create bookmark with bookmark 2 should success`() {
+
+        val request = CreateBookmarkRequest.newBuilder()
+            .setUrl(API_BOOKMARK_2.url)
+            .build()
+        val responseSpec = client.post()
+            .uri(RequestMappingValues.CREATE_BOOKMARK)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(convertProtobufToJson(request))
+            .exchange()
+            .expectStatus()
+            .isOk
 
         StepVerifier.create(getResponse(responseSpec, CreateBookmarkResponse.getDefaultInstance()))
             .consumeNextWith {
-                assertThat(it)
-                    .isEqualTo(expected)
+                ProtoTruth.assertThat(it.bookmark)
+                    .ignoringFields(Bookmark.ID_FIELD_NUMBER)
+                    .isEqualTo(API_BOOKMARK_2)
+            }
+            .verifyComplete()
+
+        StepVerifier.create(bookmarkRepository.findAll().collectList())
+            .consumeNextWith {
+                assertThat(it.size).isEqualTo(1)
             }
             .verifyComplete()
     }

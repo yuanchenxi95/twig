@@ -1,4 +1,4 @@
-package com.yuanchenxi95.twig.daos
+package com.yuanchenxi95.twig.repositories
 
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertNotNull

@@ -5,4 +5,7 @@ import org.springframework.boot.context.properties.ConstructorBinding
 
 @ConstructorBinding
 @ConfigurationProperties(prefix = "twig")
-data class TwigConfigurations(val enableDatabaseCleanup: Boolean)
+data class TwigConfigurations(
+    val enableDatabaseSetup: Boolean,
+    val showInternalServerError: Boolean
+)

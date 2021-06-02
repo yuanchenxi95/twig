@@ -11,10 +11,11 @@ message TwigApiError {
     enum ErrorType {
         UNSPECIFIED = 0;
         UNKNOWN = 1;
-        INTERNAL_SERVER_ERROR = 2;
-        NOT_FOUND = 3;
-        BAD_REQUEST = 4;
-        AUTHENTICATION_ERROR = 5;
+        INTERNAL_SERVER_ERROR = 5;
+        NOT_FOUND = 10;
+        BAD_REQUEST = 15;
+        AUTHENTICATION_ERROR = 20;
+        NOT_IMPLEMENTED_ERROR = 25;
     }
 
     uint32 code = 1;

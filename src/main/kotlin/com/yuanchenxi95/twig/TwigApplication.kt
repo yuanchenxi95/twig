@@ -12,7 +12,7 @@ import org.springframework.boot.runApplication
     exclude = [
         /**
          *  Remove the default error handler, handles errors using
-         *  [com.yuanchenxi95.twig.framework.error_handlers.GlobalErrorHandler].
+         *  [com.yuanchenxi95.twig.framework.errorhandlers.GlobalErrorHandler].
          */
         ErrorWebFluxAutoConfiguration::class,
     ]

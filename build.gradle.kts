@@ -64,6 +64,7 @@ dependencies {
     implementation("dev.miku:r2dbc-mysql")
     implementation("io.grpc", "grpc-protobuf", grpcVersion)
     implementation("io.grpc", "grpc-stub", grpcVersion)
+    implementation("io.sentry:sentry-spring-boot-starter:4.3.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.springframework.boot", "spring-boot-configuration-processor")
@@ -71,7 +72,6 @@ dependencies {
     implementation("org.springframework.boot", "spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
-    implementation("io.sentry:sentry-spring-boot-starter:4.3.0")
     implementation(kotlin("stdlib"))
     runtimeOnly("mysql:mysql-connector-java")
     testCompile("com.google.truth.extensions", "truth-proto-extension", "1.1.2")
@@ -81,6 +81,9 @@ dependencies {
     testImplementation("org.assertj", "assertj-core", "3.19.0")
     testImplementation("org.springframework.boot", "spring-boot-starter-test")
     testImplementation("org.springframework.security", "spring-security-test")
+    testImplementation("org.testcontainers", "mysql", "1.15.3")
+    testImplementation("org.testcontainers", "r2dbc", "1.15.3")
+    testImplementation("org.testcontainers", "testcontainers", "1.15.3")
 }
 
 tasks.withType<KotlinCompile> {

@@ -1,9 +1,9 @@
-package com.yuanchenxi95.twig.framework.error_handlers
+package com.yuanchenxi95.twig.framework.errorhandlers
 
 import com.yuanchenxi95.protobuf.protobuf.api.TwigApiError
-import com.yuanchenxi95.twig.constants.DEFAULT_TWIG_INTERNAL_ERROR
 import com.yuanchenxi95.twig.constants.generateBadRequestError
-import io.sentry.Sentry
+import com.yuanchenxi95.twig.constants.generateNotImplementedError
+import com.yuanchenxi95.twig.framework.validation.ValidationError
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.http.ResponseEntity
@@ -17,8 +17,7 @@ class ApplicationErrorHandler {
 
     @ExceptionHandler(value = [ServerWebInputException::class, UnsupportedMediaTypeStatusException::class])
     fun badRequestHandler(exception: Exception): ResponseEntity<TwigApiError> {
-        println(exception)
-        Sentry.captureException(exception)
+        // TODO(yuanchenxi95), Logs the bad request error as a normal message.
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .contentType(APPLICATION_JSON)
@@ -27,15 +26,25 @@ class ApplicationErrorHandler {
             )
     }
 
-    @ExceptionHandler(value = [Exception::class])
-    fun unknownExceptionHandler(exception: Exception): ResponseEntity<TwigApiError> {
-        println(exception)
-        Sentry.captureException(exception)
+    @ExceptionHandler(value = [ValidationError::class])
+    fun validationErrorHandler(validationError: ValidationError): ResponseEntity<TwigApiError> {
+        // TODO(yuanchenxi95), Logs the validation error as a normal message.
         return ResponseEntity
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .status(HttpStatus.BAD_REQUEST)
             .contentType(APPLICATION_JSON)
             .body(
-                DEFAULT_TWIG_INTERNAL_ERROR
+                generateBadRequestError(validationError)
+            )
+    }
+
+    @ExceptionHandler(value = [NotImplementedError::class])
+    fun notImplementationErrorHandler(notImplementedError: NotImplementedError): ResponseEntity<TwigApiError> {
+        // TODO(yuanchenxi95), Logs the validation error as a normal message.
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .contentType(APPLICATION_JSON)
+            .body(
+                generateNotImplementedError(notImplementedError)
             )
     }
 }
