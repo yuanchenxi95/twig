@@ -2,59 +2,28 @@ package com.yuanchenxi95.twig.framework
 
 import com.yuanchenxi95.twig.constants.generateAuthenticationError
 import com.yuanchenxi95.twig.framework.codecs.encodeProtobufValue
+import com.yuanchenxi95.twig.models.StoredUserPOC
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.http.server.reactive.ServerHttpRequest
-import org.springframework.security.authentication.ReactiveAuthenticationManager
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContext
-import org.springframework.security.core.context.SecurityContextImpl
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException
+import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.security.web.server.SecurityWebFilterChain
-import org.springframework.security.web.server.context.ServerSecurityContextRepository
-import org.springframework.stereotype.Component
-import org.springframework.web.server.ServerWebExchange
-import reactor.core.publisher.Mono
+import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono.just
 
-@Component
-class AuthenticationManager : ReactiveAuthenticationManager {
-    override fun authenticate(authentication: Authentication): Mono<Authentication> {
-        val authToken: String = authentication.credentials.toString()
-        // TODO(jiangbryn) Handles the authentication using session ID.
-        // return just(UsernamePasswordAuthenticationToken(authToken, authToken))
-        return just(UsernamePasswordAuthenticationToken(authToken, authToken, listOf()))
-    }
-}
-
-@Component
-class SecurityContextRepository : ServerSecurityContextRepository {
-    @Autowired
-    private lateinit var authenticationManager: AuthenticationManager
-    override fun save(swe: ServerWebExchange, sc: SecurityContext): Mono<Void> {
-        throw UnsupportedOperationException("Not supported yet.")
-    }
-
-    override fun load(swe: ServerWebExchange): Mono<SecurityContext> {
-        val request: ServerHttpRequest = swe.request
-        val authHeader: String? = request.headers.getFirst(HttpHeaders.AUTHORIZATION)
-        return if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            val authToken = authHeader.substring(7)
-            val auth: Authentication = UsernamePasswordAuthenticationToken(authToken, authToken)
-            authenticationManager.authenticate(auth).map { authentication: Authentication? ->
-                SecurityContextImpl(
-                    authentication
-                )
-            }
-        } else {
-            Mono.empty()
-        }
+@Service
+class StoredUserService : DefaultOAuth2UserService() {
+    @Throws(OAuth2AuthenticationException::class)
+    override fun loadUser(userRequest: OAuth2UserRequest): OAuth2User {
+        val user = super.loadUser(userRequest)
+        return StoredUserPOC(user)
     }
 }
 
@@ -63,10 +32,7 @@ class SecurityContextRepository : ServerSecurityContextRepository {
 class SecurityConfiguration {
 
     @Autowired
-    private lateinit var authenticationManager: AuthenticationManager
-
-    @Autowired
-    private lateinit var securityContextRepository: SecurityContextRepository
+    private val oauthUserService: StoredUserService? = null
 
     @Bean
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
@@ -76,18 +42,14 @@ class SecurityConfiguration {
             .csrf().disable()
             .logout().disable()
 
-        // Add custom security.
-        http.authenticationManager(this.authenticationManager)
-            .securityContextRepository(this.securityContextRepository)
-
-        http.exceptionHandling().authenticationEntryPoint { serverWebExchange, exception ->
-            val response = serverWebExchange.response
-            val bufferFactory = response.bufferFactory()
-            response.headers.contentType = MediaType.APPLICATION_JSON
-            response.statusCode = HttpStatus.UNAUTHORIZED
-            val dataBuffer = encodeProtobufValue(generateAuthenticationError(exception), bufferFactory)
-            response.writeWith(just(dataBuffer))
-        }
+//        http.exceptionHandling().authenticationEntryPoint { serverWebExchange, exception ->
+//            val response = serverWebExchange.response
+//            val bufferFactory = response.bufferFactory()
+//            response.headers.contentType = MediaType.APPLICATION_JSON
+//            response.statusCode = HttpStatus.UNAUTHORIZED
+//            val dataBuffer = encodeProtobufValue(generateAuthenticationError(exception), bufferFactory)
+//            response.writeWith(just(dataBuffer))
+//        }
 
         http.exceptionHandling()
             .accessDeniedHandler { serverWebExchange, exception ->
@@ -103,7 +65,8 @@ class SecurityConfiguration {
         http.authorizeExchange().pathMatchers("/public/**").permitAll()
         // Disable authentication for `/authenticated/**` routes.
         http.authorizeExchange().pathMatchers("/authentication/**").permitAll()
-        http.authorizeExchange().anyExchange().authenticated()
+        http.authorizeExchange().pathMatchers("/", "/login").permitAll()
+        http.authorizeExchange().anyExchange().authenticated().and().oauth2Login()
         return http.build()
     }
 }
