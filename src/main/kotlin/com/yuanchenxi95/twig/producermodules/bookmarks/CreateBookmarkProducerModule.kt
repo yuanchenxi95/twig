@@ -13,16 +13,22 @@ import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria
 import org.springframework.data.relational.core.query.Query
 import org.springframework.stereotype.Component
+import org.springframework.transaction.ReactiveTransactionManager
+import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Mono
 import java.net.URL
 
 @Component
 class CreateBookmarkProducerModule {
     @Autowired
+    lateinit var reactiveTransactionManager: ReactiveTransactionManager
+
+    @Autowired
     lateinit var r2dbcEntityTemplate: R2dbcEntityTemplate
 
     @Autowired
     lateinit var urlRepository: UrlRepository
+
     @Autowired
     lateinit var bookmarkRepository: BookmarkRepository
 
@@ -66,8 +72,13 @@ class CreateBookmarkProducerModule {
             }
     }
 
+    fun transactionRunner(request: CreateBookmarkRequest): Mono<StoredBookmark> {
+        val operator = TransactionalOperator.create(reactiveTransactionManager)
+        return createBookmark(request).`as`(operator::transactional)
+    }
+
     fun execute(request: CreateBookmarkRequest): Mono<CreateBookmarkResponse> {
-        return createBookmark(request).map {
+        return transactionRunner(request).map {
             CreateBookmarkResponse.newBuilder()
                 .setBookmark(
                     Bookmark.newBuilder().setId(it.id)
