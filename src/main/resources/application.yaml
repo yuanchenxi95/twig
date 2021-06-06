@@ -10,8 +10,6 @@ spring:
     url: 'r2dbc:mysql://localhost:3306/twig'
     username: 'twig'
     password: 'twig'
-  thymeleaf:
-    prefix: classpath:/templates/
   security:
     oauth2:
       client:

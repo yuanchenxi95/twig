@@ -5,6 +5,7 @@ import com.yuanchenxi95.twig.producermodules.bookmarks.CreateBookmarkProducerMod
 import com.yuanchenxi95.twig.protobuf.api.*
 import com.yuanchenxi95.twig.validators.validateCreateBookmarkRequest
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
@@ -20,7 +21,7 @@ class BookmarkController {
     }
 
     @GetMapping(RequestMappingValues.LIST_BOOKMARK)
-    fun listBookmarks(): Mono<ListBookmarkResponse> {
+    fun listBookmarks(authentication: Authentication): Mono<ListBookmarkResponse> {
         TODO("Not yet implemented")
     }
 }

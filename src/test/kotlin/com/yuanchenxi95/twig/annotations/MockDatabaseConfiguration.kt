@@ -6,6 +6,7 @@ import org.junit.jupiter.api.TestInstance
 import org.springframework.boot.test.autoconfigure.OverrideAutoConfiguration
 import org.springframework.boot.test.autoconfigure.data.r2dbc.AutoConfigureDataR2dbc
 import org.springframework.context.annotation.Import
+import org.springframework.security.test.context.support.WithSecurityContext
 import org.springframework.test.annotation.DirtiesContext
 
 @Target(AnnotationTarget.CLASS)

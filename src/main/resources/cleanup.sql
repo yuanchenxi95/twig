@@ -10,3 +10,5 @@ drop table url;
 
 drop table user;
 
+drop table session;
+

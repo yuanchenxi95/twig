@@ -5,11 +5,10 @@ import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 import java.util.*
 
-@Table("user")
-data class StoredUser(
+@Table("session")
+data class StoredSession(
     @Id val id: String,
-    val userEmail: String,
-    val name: String,
+    val userId: String,
+    val expirationTime: Instant,
     val createTime: Instant? = null,
-    val updateTime: Instant? = null,
 )

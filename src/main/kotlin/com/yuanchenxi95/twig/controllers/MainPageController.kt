@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 @Controller
 class MainPageController {
     @RequestMapping("/")
-    fun viewMainPage(): String? {
-        return "index"
+    fun mainPage(): String? {
+        return "main_page"
     }
 }

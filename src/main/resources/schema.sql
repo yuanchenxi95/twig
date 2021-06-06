@@ -41,11 +41,25 @@ create table if not exists user
     id          varchar(36)                         not null
         primary key,
     user_email  varchar(255)                        not null,
+    name        varchar(255)                        not null,
     create_time timestamp default CURRENT_TIMESTAMP not null,
     update_time timestamp default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP,
     constraint user_user_email_uindex
         unique (user_email)
 );
+
+create table if not exists session
+(
+    id              varchar(36)                         not null primary key,
+    user_id         varchar(36)                         not null,
+    expiration_time timestamp                           not null,
+    create_time     timestamp default CURRENT_TIMESTAMP not null,
+    constraint session_user_id_fk
+        foreign key (user_id) references user (id)
+);
+
+create index _expiration_time_index
+    on session (expiration_time desc);
 
 create table if not exists bookmark
 (
