@@ -1,8 +1,10 @@
 package com.yuanchenxi95.twig.framework.errorhandlers
 
 import com.yuanchenxi95.protobuf.protobuf.api.TwigApiError
+import com.yuanchenxi95.twig.constants.generateAuthenticationError
 import com.yuanchenxi95.twig.constants.generateBadRequestError
 import com.yuanchenxi95.twig.constants.generateNotImplementedError
+import com.yuanchenxi95.twig.exceptions.AuthFailedException
 import com.yuanchenxi95.twig.framework.validation.ValidationError
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType.APPLICATION_JSON
@@ -23,6 +25,16 @@ class ApplicationErrorHandler {
             .contentType(APPLICATION_JSON)
             .body(
                 generateBadRequestError(exception)
+            )
+    }
+
+    @ExceptionHandler(value = [AuthFailedException::class])
+    fun authFailedHandler(exception: Exception): ResponseEntity<TwigApiError> {
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .contentType(APPLICATION_JSON)
+            .body(
+                generateAuthenticationError(exception)
             )
     }
 
