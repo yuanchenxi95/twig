@@ -6,6 +6,13 @@ spring:
     url: 'r2dbc:tc:mysql://localhost:3306/twig?TC_IMAGE_TAG=8.0.25'
     username: 'twig'
     password: 'twig'
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            clientId: 00000000000000000000
+            clientSecret: 0000000000000000000000000000000000000000
 
 twig:
   enableDatabaseSetup: true
