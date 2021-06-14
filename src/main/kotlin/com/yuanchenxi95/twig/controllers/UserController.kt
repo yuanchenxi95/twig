@@ -1,6 +1,6 @@
 package com.yuanchenxi95.twig.controllers
 
-import com.yuanchenxi95.twig.framework.TwigAuthenticationToken
+import com.yuanchenxi95.twig.framework.securities.TwigAuthenticationToken
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
