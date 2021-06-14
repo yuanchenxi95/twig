@@ -1,5 +1,6 @@
 package com.yuanchenxi95.twig.producermodules.users
 
+import com.yuanchenxi95.twig.exceptions.AuthFailedException
 import com.yuanchenxi95.twig.framework.utils.UuidUtils
 import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.models.StoredUser
@@ -71,7 +72,11 @@ class LoginUserProducerModule {
     fun execute(securityContext: SecurityContext): Mono<StoredSession> {
         val defaultOAuth2User = securityContext.authentication.principal
         if (defaultOAuth2User !is DefaultOAuth2User) {
-            throw IllegalArgumentException("Unsupported principal.")
+            throw AuthFailedException("Unsupported principal.")
+        }
+
+        if (defaultOAuth2User.attributes["email"] == null || defaultOAuth2User.attributes["name"] == null) {
+            throw AuthFailedException("Authentication failed.")
         }
 
         val email = defaultOAuth2User.attributes["email"] as String

@@ -1,7 +1,9 @@
 package com.yuanchenxi95.twig.framework.errorhandlers
 
 import com.yuanchenxi95.twig.application.TwigConfigurations
+import com.yuanchenxi95.twig.constants.generateAuthenticationError
 import com.yuanchenxi95.twig.constants.generateInternalServerError
+import com.yuanchenxi95.twig.exceptions.AuthFailedException
 import com.yuanchenxi95.twig.framework.codecs.encodeProtobufValue
 import io.sentry.Sentry
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,11 +25,18 @@ class GlobalErrorHandler : ErrorWebExceptionHandler {
         val response = serverWebExchange.response
         val bufferFactory = response.bufferFactory()
         response.headers.contentType = MediaType.APPLICATION_JSON
-        response.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+        response.statusCode = when (exception) {
+            is AuthFailedException -> HttpStatus.UNAUTHORIZED
+            else -> HttpStatus.INTERNAL_SERVER_ERROR
+        }
         val dataBuffer = encodeProtobufValue(
-            generateInternalServerError(exception, twigConfigurations.showInternalServerError),
+            when (exception) {
+                is AuthFailedException -> generateAuthenticationError(exception)
+                else -> generateInternalServerError(exception, twigConfigurations.showInternalServerError)
+            },
             bufferFactory
         )
+
         return response.writeWith(Mono.just(dataBuffer))
     }
 }
