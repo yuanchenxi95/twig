@@ -12,6 +12,7 @@ import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkResponse
 import com.yuanchenxi95.twig.repositories.BookmarkRepository
 import com.yuanchenxi95.twig.utils.getResponse
+import com.yuanchenxi95.twig.utils.setUpTestData
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -21,8 +22,8 @@ import org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDeta
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.context.annotation.Import
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
+import org.springframework.http.HttpHeaders.AUTHORIZATION
 import org.springframework.http.MediaType
-import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.test.StepVerifier
 
@@ -44,17 +45,19 @@ class BookmarkControllerWebClientTests {
 
     @BeforeEach
     fun setUp() {
-        template.insert(STORED_USER_1).block()
+        setUpTestData(template).block()
     }
 
     @Test
-    @WithMockUser
     fun `create bookmark with invalid url should fail`() {
         val request = CreateBookmarkRequest.newBuilder()
             .setUrl("invalid_url")
             .build()
         val responseSpec = client.post()
             .uri(RequestMappingValues.CREATE_BOOKMARK)
+            .cookies {
+                it.add(AUTHORIZATION, STORED_SESSION_1.id)
+            }
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(convertProtobufToJson(request))
             .exchange()
@@ -69,13 +72,15 @@ class BookmarkControllerWebClientTests {
     }
 
     @Test
-    @WithMockUser
     fun `create bookmark with bookmark 1 should success`() {
         val request = CreateBookmarkRequest.newBuilder()
             .setUrl(API_BOOKMARK_1.url)
             .build()
         val responseSpec = client.post()
             .uri(RequestMappingValues.CREATE_BOOKMARK)
+            .cookies {
+                it.add(AUTHORIZATION, STORED_SESSION_1.id)
+            }
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(convertProtobufToJson(request))
             .exchange()
@@ -98,7 +103,6 @@ class BookmarkControllerWebClientTests {
     }
 
     @Test
-    @WithMockUser
     fun `create bookmark with bookmark 2 should success`() {
 
         val request = CreateBookmarkRequest.newBuilder()
@@ -106,6 +110,9 @@ class BookmarkControllerWebClientTests {
             .build()
         val responseSpec = client.post()
             .uri(RequestMappingValues.CREATE_BOOKMARK)
+            .cookies {
+                it.add(AUTHORIZATION, STORED_SESSION_1.id)
+            }
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(convertProtobufToJson(request))
             .exchange()

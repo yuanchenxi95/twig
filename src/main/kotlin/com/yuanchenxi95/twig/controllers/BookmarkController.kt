@@ -1,6 +1,7 @@
 package com.yuanchenxi95.twig.controllers
 
 import com.yuanchenxi95.twig.constants.RequestMappingValues
+import com.yuanchenxi95.twig.framework.securities.TwigAuthenticationToken
 import com.yuanchenxi95.twig.producermodules.bookmarks.CreateBookmarkProducerModule
 import com.yuanchenxi95.twig.protobuf.api.*
 import com.yuanchenxi95.twig.validators.validateCreateBookmarkRequest
@@ -15,9 +16,9 @@ class BookmarkController {
     private lateinit var createBookmarkProducerModule: CreateBookmarkProducerModule
 
     @PostMapping(RequestMappingValues.CREATE_BOOKMARK)
-    fun createBookmark(@RequestBody request: CreateBookmarkRequest): Mono<CreateBookmarkResponse> {
+    fun createBookmark(@RequestBody request: CreateBookmarkRequest, authentication: TwigAuthenticationToken): Mono<CreateBookmarkResponse> {
         validateCreateBookmarkRequest(request)
-        return createBookmarkProducerModule.execute(request)
+        return createBookmarkProducerModule.execute(request, authentication)
     }
 
     @GetMapping(RequestMappingValues.LIST_BOOKMARK)
