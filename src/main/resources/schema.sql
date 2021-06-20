@@ -61,6 +61,13 @@ create table if not exists session
 create index _expiration_time_index
     on session (expiration_time desc);
 
+create event expiresession
+on schedule every 1 day
+do
+delete from session
+where expiration_time < now()
+;
+
 create table if not exists bookmark
 (
     id          varchar(36)                         not null
