@@ -1,5 +1,6 @@
 package com.yuanchenxi95.twig.producermodules.bookmarks
 
+import com.yuanchenxi95.twig.framework.securities.TwigAuthenticationToken
 import com.yuanchenxi95.twig.framework.utils.UuidUtils
 import com.yuanchenxi95.twig.models.StoredBookmark
 import com.yuanchenxi95.twig.models.StoredUrl
@@ -50,7 +51,7 @@ class CreateBookmarkProducerModule {
         }
     }
 
-    private fun createBookmark(request: CreateBookmarkRequest): Mono<StoredBookmark> {
+    private fun createBookmark(request: CreateBookmarkRequest, authentication: TwigAuthenticationToken): Mono<StoredBookmark> {
         val url = request.url
         val storedUrlMono = r2dbcEntityTemplate.selectOne(
             Query.query(Criteria.where(StoredUrl::url.name).`is`(url)),
@@ -64,7 +65,7 @@ class CreateBookmarkProducerModule {
                     id = nextId,
                     urlId = it.id,
                     // TODO(yuanchenxi), uses the user Id from request context.
-                    userId = "00000000-0000-0000-0000-000000000000"
+                    userId = authentication.getUserId()
                 )
                 r2dbcEntityTemplate.insert(storedBookmark)
             }.flatMap {
@@ -72,13 +73,13 @@ class CreateBookmarkProducerModule {
             }
     }
 
-    fun transactionRunner(request: CreateBookmarkRequest): Mono<StoredBookmark> {
+    fun transactionRunner(request: CreateBookmarkRequest, authentication: TwigAuthenticationToken): Mono<StoredBookmark> {
         val operator = TransactionalOperator.create(reactiveTransactionManager)
-        return createBookmark(request).`as`(operator::transactional)
+        return createBookmark(request, authentication).`as`(operator::transactional)
     }
 
-    fun execute(request: CreateBookmarkRequest): Mono<CreateBookmarkResponse> {
-        return transactionRunner(request).map {
+    fun execute(request: CreateBookmarkRequest, authentication: TwigAuthenticationToken): Mono<CreateBookmarkResponse> {
+        return transactionRunner(request, authentication).map {
             CreateBookmarkResponse.newBuilder()
                 .setBookmark(
                     Bookmark.newBuilder().setId(it.id)

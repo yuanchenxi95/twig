@@ -20,4 +20,8 @@ class TwigAuthenticationToken(
     override fun getPrincipal(): Any {
         throw NotImplementedError("getPrincipal() not implemented.")
     }
+
+    fun getUserId(): String {
+        return this.storedSession!!.userId
+    }
 }

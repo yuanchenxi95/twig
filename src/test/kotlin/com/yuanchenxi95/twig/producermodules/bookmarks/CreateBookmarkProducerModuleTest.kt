@@ -4,12 +4,13 @@ import com.google.common.truth.extensions.proto.ProtoTruth
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
 import com.yuanchenxi95.twig.data.API_BOOKMARK_1
 import com.yuanchenxi95.twig.data.STORED_URL_1
-import com.yuanchenxi95.twig.data.STORED_USER_1
 import com.yuanchenxi95.twig.framework.utils.UuidUtils
 import com.yuanchenxi95.twig.models.StoredUrl
 import com.yuanchenxi95.twig.protobuf.api.Bookmark
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
 import com.yuanchenxi95.twig.repositories.UrlRepository
+import com.yuanchenxi95.twig.utils.TEST_AUTHENTICATION_TOKEN
+import com.yuanchenxi95.twig.utils.setUpTestData
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -39,7 +40,7 @@ internal class CreateBookmarkProducerModuleTest {
 
     @BeforeEach
     fun setUp() {
-        template.insert(STORED_USER_1).block()
+        setUpTestData(template).block()
     }
 
     @Test
@@ -47,7 +48,7 @@ internal class CreateBookmarkProducerModuleTest {
         val request = CreateBookmarkRequest.newBuilder()
             .setUrl(API_BOOKMARK_1.url)
             .build()
-        StepVerifier.create(createBookmarkProducerModule.execute(request))
+        StepVerifier.create(createBookmarkProducerModule.execute(request, TEST_AUTHENTICATION_TOKEN))
             .consumeNextWith {
                 ProtoTruth.assertThat(it.bookmark)
                     .ignoringFields(Bookmark.ID_FIELD_NUMBER)
