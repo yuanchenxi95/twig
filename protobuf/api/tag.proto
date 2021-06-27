@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package com.yuanchenxi95.model.api;
+
+option java_multiple_files = true;
+option java_package = "com.yuanchenxi95.twig.protobuf.api";
+option java_outer_classname = "TagProto";
+
+message Tag {
+  string id = 1;
+  string name = 2;
+}
+
+message CreateTagRequest {
+  string name = 1;
+}
+
+message CreateTagResponse {
+  Tag tag = 1;
+}
