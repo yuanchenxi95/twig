@@ -10,6 +10,7 @@ data class StoredTag(
     @Id
     val id: String,
     val tagName: String,
+    val userId: String,
     @CreatedDate
     val createTime: Instant? = null,
 )
