@@ -27,6 +27,14 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
 
+      - name: setup re-use testcontainer
+        uses: DamianReeves/write-file-action
+        with:
+          path: ${{ env.home}}/.testcontainers.properties
+          contents: |
+            echo "testcontainers.reuse.enable=true"
+          write-mode: append
+
       - name:
           Build with Gradle
         uses: eskatos/gradle-command-action@v1

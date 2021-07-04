@@ -3,7 +3,7 @@ spring:
     active: test
   r2dbc:
     # MySQL
-    url: 'r2dbc:tc:mysql://localhost:3306/twig?TC_IMAGE_TAG=8.0.25'
+    url: 'r2dbc:tc:mysql://localhost:3307/twig?TC_IMAGE_TAG=8.0.25&TC_REUSABLE=true'
     username: 'twig'
     password: 'twig'
   security:
