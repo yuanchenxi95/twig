@@ -30,3 +30,12 @@
 ```bash
 ./gradlew bootRun
 ```
+
+## Tests
+- To enable re-use testcontainer, which will increase test speed locally, add following line to `~/.testcontainers.properties` file:
+> :warning: RE-USE Testcontainer won't automatically shut down.
+
+```
+testcontainers.reuse.enable=true
+```
+
