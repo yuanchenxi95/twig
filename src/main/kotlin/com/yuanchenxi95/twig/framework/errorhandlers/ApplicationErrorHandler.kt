@@ -5,6 +5,7 @@ import com.yuanchenxi95.twig.constants.generateAuthenticationError
 import com.yuanchenxi95.twig.constants.generateBadRequestError
 import com.yuanchenxi95.twig.constants.generateNotImplementedError
 import com.yuanchenxi95.twig.exceptions.AuthFailedException
+import com.yuanchenxi95.twig.exceptions.ResourceNotFoundException
 import com.yuanchenxi95.twig.framework.validation.ValidationError
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType.APPLICATION_JSON
@@ -20,6 +21,16 @@ class ApplicationErrorHandler {
     @ExceptionHandler(value = [ServerWebInputException::class, UnsupportedMediaTypeStatusException::class])
     fun badRequestHandler(exception: Exception): ResponseEntity<TwigApiError> {
         // TODO(yuanchenxi95), Logs the bad request error as a normal message.
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .contentType(APPLICATION_JSON)
+            .body(
+                generateBadRequestError(exception)
+            )
+    }
+
+    @ExceptionHandler(value = [ResourceNotFoundException::class])
+    fun tagNotFoundExceptionHandler(exception: ResourceNotFoundException): ResponseEntity<TwigApiError> {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .contentType(APPLICATION_JSON)

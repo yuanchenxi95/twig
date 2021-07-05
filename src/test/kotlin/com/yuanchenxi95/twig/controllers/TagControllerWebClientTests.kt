@@ -3,13 +3,17 @@ package com.yuanchenxi95.twig.controllers
 import com.google.common.truth.Truth.assertThat
 import com.yuanchenxi95.protobuf.protobuf.api.TwigApiError
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
+import com.yuanchenxi95.twig.constants.RequestMappingValues
 import com.yuanchenxi95.twig.constants.RequestMappingValues.Companion.CREATE_TAG
 import com.yuanchenxi95.twig.data.STORED_SESSION_1
+import com.yuanchenxi95.twig.data.STORED_TAG_1
 import com.yuanchenxi95.twig.framework.codecs.convertProtobufToJson
 import com.yuanchenxi95.twig.protobuf.api.CreateTagRequest
 import com.yuanchenxi95.twig.protobuf.api.CreateTagResponse
+import com.yuanchenxi95.twig.protobuf.api.DeleteTagResponse
 import com.yuanchenxi95.twig.repositories.TagRepository
 import com.yuanchenxi95.twig.utils.getResponse
+import com.yuanchenxi95.twig.utils.setUpTagData
 import com.yuanchenxi95.twig.utils.setUpTestData
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -151,6 +155,89 @@ class TagControllerWebClientTests {
         StepVerifier.create(tagRepository.findAll().collectList())
             .assertNext {
                 assertThat(it.size).isEqualTo(1)
+            }
+            .verifyComplete()
+    }
+
+    @Test
+    fun `delete tag should success`() {
+        setUpTagData(template).block()
+
+        val tagName = STORED_TAG_1.tagName
+
+        val responseSpec = client.delete()
+            .uri(RequestMappingValues.DELETE_TAG, tagName)
+            .cookies {
+                it.add(HttpHeaders.AUTHORIZATION, STORED_SESSION_1.id)
+            }
+            .exchange()
+            .expectStatus()
+            .isOk
+
+        StepVerifier.create(getResponse(responseSpec, DeleteTagResponse.getDefaultInstance()))
+            .assertNext {
+                assertThat(it).isEqualTo(DeleteTagResponse.newBuilder().build())
+            }
+            .verifyComplete()
+
+        StepVerifier.create(tagRepository.findAll().collectList())
+            .assertNext {
+                assertThat(it.size).isEqualTo(0)
+            }
+            .verifyComplete()
+    }
+
+    @Test
+    fun `delete not existed tag should fail`() {
+        setUpTagData(template).block()
+
+        val tagName = STORED_TAG_1.tagName + "NotExisted"
+
+        val responseSpec = client.delete()
+            .uri(RequestMappingValues.DELETE_TAG, tagName)
+            .cookies {
+                it.add(HttpHeaders.AUTHORIZATION, STORED_SESSION_1.id)
+            }
+            .exchange()
+            .expectStatus()
+            .isBadRequest
+
+        StepVerifier.create(getResponse(responseSpec, TwigApiError.getDefaultInstance()))
+            .assertNext {
+                assertThat(it.message).isEqualTo("No such Tag.")
+            }
+            .verifyComplete()
+
+        StepVerifier.create(tagRepository.findAll().collectList())
+            .assertNext {
+                assertThat(it.size).isEqualTo(1)
+                assertThat(it[0].tagName).isEqualTo(STORED_TAG_1.tagName)
+            }
+            .verifyComplete()
+    }
+
+    @Test
+    fun `delete tag from empty repo should fail`() {
+        val tagName = STORED_TAG_1.tagName + "NotExisted"
+
+        val responseSpec = client.delete()
+            .uri(RequestMappingValues.DELETE_TAG, tagName)
+            .cookies {
+                it.add(HttpHeaders.AUTHORIZATION, STORED_SESSION_1.id)
+            }
+            .exchange()
+            .expectStatus()
+            .isBadRequest
+
+        StepVerifier.create(getResponse(responseSpec, TwigApiError.getDefaultInstance()))
+            .assertNext {
+                assertThat(it.message).isEqualTo("No such Tag.")
+            }
+            .verifyComplete()
+
+        StepVerifier.create(tagRepository.findAll().collectList())
+            .assertNext {
+                assertThat(it.size).isEqualTo(0)
             }
             .verifyComplete()
     }
