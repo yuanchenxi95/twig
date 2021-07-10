@@ -51,6 +51,14 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
 
+      - name: Write TestContainer Properties
+        uses: DamianReeves/write-file-action@v1.0
+        with:
+          path: ${{ github.workspace }}/.testcontainers.properties
+          contents: |
+            echo "testcontainers.reuse.enable=true"
+          write-mode: overwrite
+
       - name:
           Test with Gradle
         uses: eskatos/gradle-command-action@v1
