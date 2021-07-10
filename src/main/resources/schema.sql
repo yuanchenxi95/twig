@@ -81,10 +81,9 @@ create table if not exists tag
     tag_name    varchar(255)                        not null,
     user_id     varchar(36)                         not null,
     create_time timestamp default CURRENT_TIMESTAMP not null,
-    constraint tag_name
-        unique (tag_name),
-    constraint tag_pk_2
-        unique (tag_name),
+
+    constraint tag_tag_name_user_id_uindex
+        unique (tag_name, user_id),
     constraint tag_user_id_fk
         foreign key (user_id) references user (id)
 );
@@ -99,6 +98,8 @@ create table if not exists tags_bookmarks
     bookmark_id varchar(36)                         not null,
     tag_id      varchar(36)                         not null,
     create_time timestamp default CURRENT_TIMESTAMP not null,
+    constraint tags_bookmarks_bookmark_id_tag_id_uindex
+        unique (bookmark_id, tag_id),
     constraint tags_bookmarks_bookmark_id_fk
         foreign key (bookmark_id) references bookmark (id),
     constraint tags_bookmarks_tag_id_fk
