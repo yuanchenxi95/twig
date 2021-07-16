@@ -1,0 +1,5 @@
+dist
+.cache
+src/proto
+src/assets
+yarn.lock

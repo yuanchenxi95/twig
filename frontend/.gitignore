@@ -1,0 +1,11 @@
+node_modules
+build
+lib
+dist
+
+.parcel-cache
+.cache
+.idea
+.DS_Store
+yarn-error.log
+
