@@ -1,0 +1,6 @@
+[production staging]
+chrome 68
+
+[development]
+last 5 chrome version
+last 5 firefox version
