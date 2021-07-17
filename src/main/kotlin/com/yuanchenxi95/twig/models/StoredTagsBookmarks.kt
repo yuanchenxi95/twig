@@ -7,7 +7,7 @@ import java.util.*
 
 @Table("tags_bookmarks")
 data class StoredTagsBookmarks(
-    @Id() val id: String,
+    @Id val id: String,
     val bookmarkId: String,
     val tagId: String,
     val createTime: Instant? = null,

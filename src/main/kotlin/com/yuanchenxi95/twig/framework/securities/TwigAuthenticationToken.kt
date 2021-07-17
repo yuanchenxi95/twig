@@ -3,9 +3,10 @@ package com.yuanchenxi95.twig.framework.securities
 import com.yuanchenxi95.twig.models.StoredSession
 import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
+import java.time.Instant
 
 class TwigAuthenticationToken(
-    val storedSession: StoredSession? = null,
+    private val storedSession: StoredSession? = null,
     authorities: Collection<out GrantedAuthority> = listOf()
 ) : AbstractAuthenticationToken(authorities) {
 
@@ -23,5 +24,9 @@ class TwigAuthenticationToken(
 
     fun getUserId(): String {
         return this.storedSession!!.userId
+    }
+
+    fun getExpirationTime(): Instant {
+        return this.storedSession!!.expirationTime
     }
 }
