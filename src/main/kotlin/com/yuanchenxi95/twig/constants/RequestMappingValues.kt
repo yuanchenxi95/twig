@@ -9,5 +9,7 @@ class RequestMappingValues {
         const val UPDATE_BOOKMARK = "/api/bookmarks/{$BOOKMARK_ID}"
         const val CREATE_TAG = "/api/tags"
         const val DELETE_TAG = "/api/tags/{tagName}"
+
+        const val GET_USER_INFORMATION = "/api/users/me"
     }
 }
