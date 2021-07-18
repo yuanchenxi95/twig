@@ -1,10 +1,12 @@
 package com.yuanchenxi95.twig.producermodules.bookmarks
 
 import com.google.common.truth.extensions.proto.ProtoTruth
+import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
 import com.yuanchenxi95.twig.data.API_BOOKMARK_1
 import com.yuanchenxi95.twig.data.STORED_URL_1
 import com.yuanchenxi95.twig.framework.utils.UuidUtils
+import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.models.StoredUrl
 import com.yuanchenxi95.twig.protobuf.api.Bookmark
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
@@ -20,6 +22,7 @@ import org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDeta
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.context.annotation.Import
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 import reactor.test.StepVerifier
 
 @WebFluxTest(
@@ -27,7 +30,7 @@ import reactor.test.StepVerifier
 )
 @MockDatabaseConfiguration
 @Import(CreateBookmarkProducerModule::class, UuidUtils::class)
-internal class CreateBookmarkProducerModuleTest {
+internal class CreateBookmarkProducerModuleTest : AbstractTestBase() {
 
     @Autowired
     private lateinit var createBookmarkProducerModule: CreateBookmarkProducerModule
@@ -38,9 +41,12 @@ internal class CreateBookmarkProducerModuleTest {
     @Autowired
     private lateinit var template: R2dbcEntityTemplate
 
+    @Autowired
+    private lateinit var redisTemplate: ReactiveRedisTemplate<String, StoredSession>
+
     @BeforeEach
     fun setUp() {
-        setUpTestData(template).block()
+        setUpTestData(template, redisTemplate).block()
     }
 
     @Test

@@ -6,6 +6,7 @@ import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.models.StoredUser
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.data.relational.core.query.Criteria
 import org.springframework.data.relational.core.query.Query
 import org.springframework.security.core.context.SecurityContext
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.ReactiveTransactionManager
 import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Mono
+import java.time.Duration
 import java.time.Instant
 
 @Component
@@ -21,6 +23,9 @@ class LoginUserProducerModule {
 
     @Autowired
     lateinit var r2dbcEntityTemplate: R2dbcEntityTemplate
+
+    @Autowired
+    lateinit var redisSessionTemplate: ReactiveRedisTemplate<String, StoredSession>
 
     @Autowired
     lateinit var uuidUtils: UuidUtils
@@ -56,7 +61,12 @@ class LoginUserProducerModule {
             userId,
             expirationTime,
         )
-        return r2dbcEntityTemplate.insert(storedSession)
+
+        return redisSessionTemplate.opsForValue()
+            .set(nextId, storedSession, Duration.ofSeconds(expirationDurationInSeconds))
+            .flatMap {
+                Mono.just(storedSession)
+            }
     }
 
     fun transactionRunner(email: String, name: String): Mono<StoredSession> {

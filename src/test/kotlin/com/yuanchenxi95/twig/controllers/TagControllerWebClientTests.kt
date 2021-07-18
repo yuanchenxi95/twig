@@ -2,12 +2,14 @@ package com.yuanchenxi95.twig.controllers
 
 import com.google.common.truth.Truth.assertThat
 import com.yuanchenxi95.protobuf.protobuf.api.TwigApiError
+import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
 import com.yuanchenxi95.twig.constants.RequestMappingValues
 import com.yuanchenxi95.twig.constants.RequestMappingValues.Companion.CREATE_TAG
 import com.yuanchenxi95.twig.data.STORED_SESSION_1
 import com.yuanchenxi95.twig.data.STORED_TAG_1
 import com.yuanchenxi95.twig.framework.codecs.convertProtobufToJson
+import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.protobuf.api.CreateTagRequest
 import com.yuanchenxi95.twig.protobuf.api.CreateTagResponse
 import com.yuanchenxi95.twig.protobuf.api.DeleteTagResponse
@@ -21,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDetailsServiceAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -32,7 +35,7 @@ import reactor.test.StepVerifier
     excludeAutoConfiguration = [ReactiveUserDetailsServiceAutoConfiguration::class]
 )
 @MockDatabaseConfiguration
-class TagControllerWebClientTests {
+class TagControllerWebClientTests : AbstractTestBase() {
     @Autowired
     private lateinit var client: WebTestClient
 
@@ -42,9 +45,12 @@ class TagControllerWebClientTests {
     @Autowired
     private lateinit var tagRepository: TagRepository
 
+    @Autowired
+    private lateinit var redisTemplate: ReactiveRedisTemplate<String, StoredSession>
+
     @BeforeEach
-    fun setup() {
-        setUpTestData(template).block()
+    fun setUp() {
+        setUpTestData(template, redisTemplate).block()
     }
 
     companion object {

@@ -1,10 +1,12 @@
 package com.yuanchenxi95.twig.modelservices
 
+import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
 import com.yuanchenxi95.twig.data.STORED_BOOKMARK_1
 import com.yuanchenxi95.twig.data.STORED_TAG_1
 import com.yuanchenxi95.twig.data.STORED_TAG_2
 import com.yuanchenxi95.twig.data.STORED_URL_1
+import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.models.StoredTagsBookmarks
 import com.yuanchenxi95.twig.utils.reactorutils.parallelExecuteWithLimit
 import com.yuanchenxi95.twig.utils.setUpTestData
@@ -16,13 +18,14 @@ import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurity
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDetailsServiceAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 import reactor.test.StepVerifier
 
 @WebFluxTest(
     excludeAutoConfiguration = [ReactiveUserDetailsServiceAutoConfiguration::class, ReactiveSecurityAutoConfiguration::class]
 )
 @MockDatabaseConfiguration
-class StoredTagsBookmarksServiceTest {
+class StoredTagsBookmarksServiceTest : AbstractTestBase() {
     @Autowired
     private lateinit var template: R2dbcEntityTemplate
 
@@ -32,9 +35,13 @@ class StoredTagsBookmarksServiceTest {
     @Autowired
     lateinit var storedTagService: StoredTagService
 
+    @Autowired
+    private lateinit var redisTemplate: ReactiveRedisTemplate<String, StoredSession>
+
     @BeforeEach
     fun setUp() {
-        setUpTestData(template).block()
+        setUpTestData(template, redisTemplate).block()
+
         template.insert(STORED_URL_1).then(
             parallelExecuteWithLimit(
                 listOf(

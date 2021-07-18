@@ -2,10 +2,12 @@ package com.yuanchenxi95.twig.controllers
 
 import com.google.common.truth.extensions.proto.ProtoTruth
 import com.yuanchenxi95.protobuf.protobuf.api.TwigApiError
+import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
 import com.yuanchenxi95.twig.constants.RequestMappingValues
 import com.yuanchenxi95.twig.data.*
 import com.yuanchenxi95.twig.framework.codecs.convertProtobufToJson
+import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.protobuf.api.Bookmark
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkResponse
@@ -20,6 +22,7 @@ import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurity
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDetailsServiceAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.http.HttpHeaders.AUTHORIZATION
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -30,7 +33,7 @@ import reactor.test.StepVerifier
     excludeAutoConfiguration = [ReactiveUserDetailsServiceAutoConfiguration::class, ReactiveSecurityAutoConfiguration::class]
 )
 @MockDatabaseConfiguration
-class BookmarkControllerWebClientTests {
+class BookmarkControllerWebClientTests : AbstractTestBase() {
     @Autowired
     private lateinit var client: WebTestClient
 
@@ -40,9 +43,12 @@ class BookmarkControllerWebClientTests {
     @Autowired
     private lateinit var bookmarkRepository: BookmarkRepository
 
+    @Autowired
+    private lateinit var redisTemplate: ReactiveRedisTemplate<String, StoredSession>
+
     @BeforeEach
     fun setUp() {
-        setUpTestData(template).block()
+        setUpTestData(template, redisTemplate).block()
     }
 
     @Test

@@ -1,7 +1,9 @@
 package com.yuanchenxi95.twig.producermodules.tags
 
 import com.google.common.truth.Truth.assertThat
+import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
+import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.protobuf.api.CreateTagRequest
 import com.yuanchenxi95.twig.repositories.TagRepository
 import com.yuanchenxi95.twig.utils.TEST_AUTHENTICATION_TOKEN
@@ -14,6 +16,7 @@ import org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDeta
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.context.annotation.Import
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 import reactor.test.StepVerifier
 
 @WebFluxTest(
@@ -23,7 +26,7 @@ import reactor.test.StepVerifier
 @Import(
     CreateTagProducerModule::class
 )
-class CreateTagProducerModuleTest {
+class CreateTagProducerModuleTest : AbstractTestBase() {
 
     @Autowired
     private lateinit var createTagProducerModule: CreateTagProducerModule
@@ -37,9 +40,13 @@ class CreateTagProducerModuleTest {
     companion object {
         const val TAG_NAME = "FirstTag"
     }
+
+    @Autowired
+    private lateinit var redisTemplate: ReactiveRedisTemplate<String, StoredSession>
+
     @BeforeEach
-    fun setup() {
-        setUpTestData(template).block()
+    fun setUp() {
+        setUpTestData(template, redisTemplate).block()
     }
 
     @Test
