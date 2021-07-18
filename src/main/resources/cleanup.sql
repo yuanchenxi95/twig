@@ -6,6 +6,4 @@ drop table tag;
 
 drop table url;
 
-drop table session;
-
 drop table user;

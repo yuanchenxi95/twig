@@ -2,10 +2,12 @@ package com.yuanchenxi95.twig.producermodules.bookmarks
 
 import com.google.common.truth.extensions.proto.ProtoTruth.assertThat
 import com.google.protobuf.util.FieldMaskUtil
+import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
 import com.yuanchenxi95.twig.data.*
 import com.yuanchenxi95.twig.exceptions.ResourceNotFoundException
 import com.yuanchenxi95.twig.framework.utils.UuidUtils
+import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.models.StoredTagsBookmarks
 import com.yuanchenxi95.twig.modelservices.StoredTagService
 import com.yuanchenxi95.twig.protobuf.api.Bookmark
@@ -22,6 +24,7 @@ import org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDeta
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.context.annotation.Import
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList
 import reactor.test.StepVerifier
 
@@ -30,7 +33,7 @@ import reactor.test.StepVerifier
 )
 @MockDatabaseConfiguration
 @Import(UuidUtils::class)
-internal class UpdateBookmarkProducerModuleTest {
+internal class UpdateBookmarkProducerModuleTest : AbstractTestBase() {
 
     @Autowired
     private lateinit var updateBookmarkProducerModule: UpdateBookmarkProducerModule
@@ -44,9 +47,12 @@ internal class UpdateBookmarkProducerModuleTest {
     @Autowired
     private lateinit var uuidUtils: UuidUtils
 
+    @Autowired
+    private lateinit var redisTemplate: ReactiveRedisTemplate<String, StoredSession>
+
     @BeforeEach
     fun setUp() {
-        setUpTestData(template)
+        setUpTestData(template, redisTemplate)
             .then(
                 template.insert(STORED_URL_1)
             )

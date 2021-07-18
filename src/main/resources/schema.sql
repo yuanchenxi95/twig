@@ -33,27 +33,6 @@ create table if not exists user
         unique (user_email)
 );
 
-create table if not exists session
-(
-    id              varchar(36)                         not null primary key,
-    user_id         varchar(36)                         not null,
-    expiration_time timestamp                           not null,
-    create_time     timestamp default CURRENT_TIMESTAMP not null,
-    constraint session_user_id_fk
-        foreign key (user_id) references user (id)
-);
-
-create index _expiration_time_index
-    on session (expiration_time desc);
-
-create event if not exists expiresession
-    on schedule every 1 day
-    do
-    delete
-    from session
-    where expiration_time < now()
-;
-
 create table if not exists bookmark
 (
     id          varchar(36)                         not null

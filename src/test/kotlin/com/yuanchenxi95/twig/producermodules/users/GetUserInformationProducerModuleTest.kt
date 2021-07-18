@@ -1,8 +1,10 @@
 package com.yuanchenxi95.twig.producermodules.users
 
 import com.google.common.truth.extensions.proto.ProtoTruth.assertThat
+import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
 import com.yuanchenxi95.twig.data.STORED_USER_1
+import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.producermodules.tags.CreateTagProducerModule
 import com.yuanchenxi95.twig.protobuf.api.GetUserInformationResponse
 import com.yuanchenxi95.twig.utils.TEST_AUTHENTICATION_TOKEN
@@ -17,6 +19,7 @@ import org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDeta
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.context.annotation.Import
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 import reactor.test.StepVerifier
 
 @WebFluxTest(
@@ -26,7 +29,7 @@ import reactor.test.StepVerifier
 @Import(
     CreateTagProducerModule::class
 )
-internal class GetUserInformationProducerModuleTest {
+internal class GetUserInformationProducerModuleTest : AbstractTestBase() {
 
     @Autowired
     private lateinit var template: R2dbcEntityTemplate
@@ -34,9 +37,12 @@ internal class GetUserInformationProducerModuleTest {
     @Autowired
     private lateinit var getUserInformationProducerModule: GetUserInformationProducerModule
 
+    @Autowired
+    private lateinit var redisTemplate: ReactiveRedisTemplate<String, StoredSession>
+
     @BeforeEach
-    fun setup() {
-        setUpTestData(template).block()
+    fun setUp() {
+        setUpTestData(template, redisTemplate).block()
     }
 
     @Test
