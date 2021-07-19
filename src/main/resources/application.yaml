@@ -24,3 +24,4 @@ sentry:
 twig:
   enableDatabaseSetup: false
   showInternalServerError: true
+  frontendDistDirectory: './frontend/dist/'

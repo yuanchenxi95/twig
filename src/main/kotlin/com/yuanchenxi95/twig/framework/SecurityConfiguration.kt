@@ -48,7 +48,7 @@ class SecurityConfiguration {
             }
 
         // Disable authentication for `/public/**`, `/login/**`, and `/` routes.
-        http.authorizeExchange().pathMatchers("/public/**", "login/**", "/").permitAll()
+        http.authorizeExchange().pathMatchers("/public/**", "/app/**", "login/**", "/").permitAll()
         http.authorizeExchange().anyExchange().authenticated()
 
         http

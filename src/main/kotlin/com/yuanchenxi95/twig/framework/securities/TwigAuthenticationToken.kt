@@ -7,7 +7,7 @@ import java.time.Instant
 
 class TwigAuthenticationToken(
     private val storedSession: StoredSession? = null,
-    authorities: Collection<out GrantedAuthority> = listOf()
+    authorities: Collection<GrantedAuthority> = listOf()
 ) : AbstractAuthenticationToken(authorities) {
 
     init {
