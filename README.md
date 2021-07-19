@@ -39,3 +39,17 @@
 testcontainers.reuse.enable=true
 ```
 
+## Dev
+
+1. Start Kotlin server:
+```
+./gradlew bootRun
+```
+
+2. Start frontend dev:
+```
+cd ./frontend
+yarn start
+```
+
+Visit http://localhost:8080/app

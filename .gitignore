@@ -38,3 +38,6 @@ out/
 
 ### MySQL data ###
 .data/
+
+### Redis data ###
+.redisdata/

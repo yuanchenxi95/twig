@@ -1,14 +1,20 @@
 package com.yuanchenxi95.twig.framework
 
+import com.yuanchenxi95.twig.application.TwigConfigurations
 import com.yuanchenxi95.twig.framework.codecs.ProtobufJsonDecoder
 import com.yuanchenxi95.twig.framework.codecs.ProtobufJsonEncoder
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.io.FileSystemResource
 import org.springframework.http.codec.ServerCodecConfigurer
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.config.ViewResolverRegistry
 import org.springframework.web.reactive.config.WebFluxConfigurer
+import org.springframework.web.reactive.function.server.RouterFunction
+import org.springframework.web.reactive.function.server.RouterFunctions
+import org.springframework.web.reactive.function.server.ServerResponse
 import org.thymeleaf.spring5.ISpringWebFluxTemplateEngine
 import org.thymeleaf.spring5.SpringWebFluxTemplateEngine
 import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver
@@ -20,6 +26,9 @@ import org.thymeleaf.templateresolver.ITemplateResolver
 @Configuration
 @ComponentScan
 class ApplicationWebFluxConfigurer : WebFluxConfigurer {
+
+    @Autowired
+    lateinit var twigConfigurations: TwigConfigurations
 
     override fun configureHttpMessageCodecs(configurer: ServerCodecConfigurer) {
         // Registers codecs for converting data between JSON and Protobuf .
@@ -54,5 +63,10 @@ class ApplicationWebFluxConfigurer : WebFluxConfigurer {
 
     override fun configureViewResolvers(registry: ViewResolverRegistry) {
         registry.viewResolver(thymeleafReactiveViewResolver())
+    }
+
+    @Bean
+    fun staticResourceRouter(): RouterFunction<ServerResponse> {
+        return RouterFunctions.resources("/app/**", FileSystemResource(twigConfigurations.frontendDistDirectory))
     }
 }

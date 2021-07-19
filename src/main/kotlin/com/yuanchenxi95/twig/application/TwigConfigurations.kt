@@ -7,5 +7,6 @@ import org.springframework.boot.context.properties.ConstructorBinding
 @ConfigurationProperties(prefix = "twig")
 data class TwigConfigurations(
     val enableDatabaseSetup: Boolean,
-    val showInternalServerError: Boolean
+    val showInternalServerError: Boolean,
+    val frontendDistDirectory: String,
 )
