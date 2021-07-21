@@ -23,7 +23,6 @@ message CreateBookmarkResponse {
 }
 
 message ListBookmarkRequest {
-    string hostname = 1;
 }
 
 message ListBookmarkResponse {
