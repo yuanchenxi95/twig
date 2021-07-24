@@ -21,3 +21,12 @@ message CreateTagResponse {
 
 message DeleteTagResponse {
 }
+
+message ListTagRequest {
+  string maxResults = 10;
+  string nextPageToken = 1;
+}
+
+message ListTagResponse {
+  repeated Tag tags = 1;
+}
