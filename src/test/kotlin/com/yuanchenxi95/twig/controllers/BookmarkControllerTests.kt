@@ -1,6 +1,7 @@
 package com.yuanchenxi95.twig.controllers
 
 import com.google.common.truth.extensions.proto.ProtoTruth.assertThat
+import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.data.API_BOOKMARK_1
 import com.yuanchenxi95.twig.producermodules.bookmarks.CreateBookmarkProducerModule
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
@@ -19,7 +20,7 @@ import reactor.test.StepVerifier
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-class BookmarkControllerTests {
+class BookmarkControllerTests : AbstractTestBase() {
 
     @MockBean
     private lateinit var createBookmarkProducerModule: CreateBookmarkProducerModule

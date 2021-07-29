@@ -9,6 +9,7 @@ import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkResponse
 import com.yuanchenxi95.twig.repositories.BookmarkRepository
 import com.yuanchenxi95.twig.repositories.UrlRepository
+import com.yuanchenxi95.twig.streams.UrlStreamProducer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria
@@ -34,6 +35,9 @@ class CreateBookmarkProducerModule {
     lateinit var bookmarkRepository: BookmarkRepository
 
     @Autowired
+    lateinit var urlStreamProducer: UrlStreamProducer
+
+    @Autowired
     lateinit var uuidUtils: UuidUtils
 
     private fun createUrl(url: String): Mono<StoredUrl> {
@@ -48,6 +52,8 @@ class CreateBookmarkProducerModule {
         )
         return r2dbcEntityTemplate.insert(storedUrl).flatMap {
             urlRepository.findById(nextId)
+        }.doOnNext {
+            urlStreamProducer.publishUrlEvent(it)
         }
     }
 

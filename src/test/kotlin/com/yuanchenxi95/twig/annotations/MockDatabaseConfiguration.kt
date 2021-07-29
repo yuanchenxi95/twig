@@ -13,7 +13,10 @@ import org.springframework.test.annotation.DirtiesContext
 @AutoConfigureDataR2dbc
 @AutoConfigureDataRedis
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
-@ComponentScan("com.yuanchenxi95.twig.producermodules", "com.yuanchenxi95.twig.modelservices")
+@ComponentScan(
+    "com.yuanchenxi95.twig.producermodules",
+    "com.yuanchenxi95.twig.modelservices", "com.yuanchenxi95.twig.streams"
+)
 /** Mark the context as dirty after each test method. */
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 annotation class MockDatabaseConfiguration
