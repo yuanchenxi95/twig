@@ -25,3 +25,8 @@ twig:
   enableDatabaseSetup: false
   showInternalServerError: true
   frontendDistDirectory: './frontend/dist/'
+
+streams:
+  url:
+    key: urlstream
+    group: inApp

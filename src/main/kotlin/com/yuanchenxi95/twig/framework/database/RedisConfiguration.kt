@@ -3,6 +3,7 @@ package com.yuanchenxi95.twig.framework.database
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.yuanchenxi95.twig.models.StoredSession
+import com.yuanchenxi95.twig.models.StoredUrl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -20,7 +21,7 @@ class RedisConfiguration {
     lateinit var factory: RedisConnectionFactory
 
     @Bean
-    fun reactiveRedisTemplate(
+    fun reactiveRedisTemplateForSession(
         reactiveRedisConnectionFactory: ReactiveRedisConnectionFactory?
     ): ReactiveRedisTemplate<String, StoredSession>? {
         val serializer: Jackson2JsonRedisSerializer<StoredSession> =
@@ -29,6 +30,21 @@ class RedisConfiguration {
 
         val builder =
             RedisSerializationContext.newSerializationContext<String, StoredSession>(StringRedisSerializer())
+
+        val context = builder.value(serializer).build()
+
+        return ReactiveRedisTemplate(reactiveRedisConnectionFactory!!, context)
+    }
+
+    @Bean
+    fun reactiveRedisTemplateForUrl(
+        reactiveRedisConnectionFactory: ReactiveRedisConnectionFactory?
+    ): ReactiveRedisTemplate<String, StoredUrl>? {
+        val serializer: Jackson2JsonRedisSerializer<StoredUrl> =
+            Jackson2JsonRedisSerializer(StoredUrl::class.java)
+
+        val builder =
+            RedisSerializationContext.newSerializationContext<String, StoredUrl>(StringRedisSerializer())
 
         val context = builder.value(serializer).build()
 
