@@ -34,7 +34,7 @@ class ValidateSessionProducerModuleTest : AbstractTestBase() {
     fun `validate session success`() {
         redisSessionTemplate.opsForValue().set(STORED_SESSION_1.id, STORED_SESSION_1).block()
 
-        StepVerifier.create(validateSessionProducerModule.execute(STORED_SESSION_1.id))
+        StepVerifier.create(validateSessionProducerModule.Executor(STORED_SESSION_1.id).execute())
             .assertNext {
                 assertThat(it!!.id).isEqualTo(STORED_SESSION_1.id)
                 assertThat(it.userId).isEqualTo(STORED_SESSION_1.userId)
@@ -45,17 +45,18 @@ class ValidateSessionProducerModuleTest : AbstractTestBase() {
 
     @Test
     fun `validate not existed session failed`() {
-        StepVerifier.create(validateSessionProducerModule.execute(STORED_SESSION_1.id))
+        StepVerifier.create(validateSessionProducerModule.Executor(STORED_SESSION_1.id).execute())
             .expectNextCount(0)
             .verifyComplete()
     }
 
     @Test
     fun `validate expired session failed`() {
-        redisSessionTemplate.opsForValue().set(STORED_SESSION_1.id, STORED_SESSION_1, Duration.ofSeconds(1)).block()
+        redisSessionTemplate.opsForValue()
+            .set(STORED_SESSION_1.id, STORED_SESSION_1, Duration.ofSeconds(1)).block()
 
         Thread.sleep(2000L)
-        StepVerifier.create(validateSessionProducerModule.execute(STORED_SESSION_1.id))
+        StepVerifier.create(validateSessionProducerModule.Executor(STORED_SESSION_1.id).execute())
             .expectNextCount(0)
             .verifyComplete()
     }

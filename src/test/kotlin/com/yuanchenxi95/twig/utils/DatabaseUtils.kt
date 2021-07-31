@@ -10,7 +10,10 @@ import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import reactor.core.publisher.Mono
 
-fun setUpTestData(r2dbcEntityTemplate: R2dbcEntityTemplate, reactiveRedisTemplate: ReactiveRedisTemplate<String, StoredSession>): Mono<Void> {
+fun setUpTestData(
+    r2dbcEntityTemplate: R2dbcEntityTemplate,
+    reactiveRedisTemplate: ReactiveRedisTemplate<String, StoredSession>
+): Mono<Void> {
     return parallelExecuteWithLimit(
         listOf(
             r2dbcEntityTemplate.insert(STORED_USER_1),

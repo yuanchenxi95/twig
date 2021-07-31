@@ -4,6 +4,7 @@ import com.yuanchenxi95.twig.framework.securities.TwigAuthenticationToken
 import com.yuanchenxi95.twig.framework.utils.UuidUtils
 import com.yuanchenxi95.twig.models.StoredBookmark
 import com.yuanchenxi95.twig.models.StoredUrl
+import com.yuanchenxi95.twig.producermodules.ProducerModule
 import com.yuanchenxi95.twig.protobuf.api.Bookmark
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkResponse
@@ -21,7 +22,7 @@ import reactor.core.publisher.Mono
 import java.net.URL
 
 @Component
-class CreateBookmarkProducerModule {
+class CreateBookmarkProducerModule : ProducerModule<CreateBookmarkResponse> {
     @Autowired
     lateinit var reactiveTransactionManager: ReactiveTransactionManager
 
@@ -40,59 +41,65 @@ class CreateBookmarkProducerModule {
     @Autowired
     lateinit var uuidUtils: UuidUtils
 
-    private fun createUrl(url: String): Mono<StoredUrl> {
-        val parsedUrl = URL(url)
-        val nextId = uuidUtils.generateUUID()
-        val storedUrl = StoredUrl(
-            id = nextId,
-            protocol = parsedUrl.protocol,
-            host = parsedUrl.host,
-            path = parsedUrl.path,
-            url = url
-        )
-        return r2dbcEntityTemplate.insert(storedUrl).flatMap {
-            urlRepository.findById(nextId)
-        }.doOnNext {
-            urlStreamProducer.publishUrlEvent(it)
-        }
-    }
+    inner class Executor(
+        private val request: CreateBookmarkRequest,
+        private val authentication: TwigAuthenticationToken
+    ) : ProducerModule.ProducerModuleExecutor<CreateBookmarkResponse> {
 
-    private fun createBookmark(request: CreateBookmarkRequest, authentication: TwigAuthenticationToken): Mono<StoredBookmark> {
-        val url = request.url
-        val storedUrlMono = r2dbcEntityTemplate.selectOne(
-            Query.query(Criteria.where(StoredUrl::url.name).`is`(url)),
-            StoredUrl::class.java
-        )
-
-        val nextId = uuidUtils.generateUUID()
-        return storedUrlMono.switchIfEmpty(this.createUrl(url))
-            .flatMap {
-                val storedBookmark = StoredBookmark(
-                    id = nextId,
-                    urlId = it.id,
-                    // TODO(yuanchenxi), uses the user Id from request context.
-                    userId = authentication.getUserId()
-                )
-                r2dbcEntityTemplate.insert(storedBookmark)
-            }.flatMap {
-                bookmarkRepository.findById(nextId)
+        private fun createUrl(url: String): Mono<StoredUrl> {
+            val parsedUrl = URL(url)
+            val nextId = uuidUtils.generateUUID()
+            val storedUrl = StoredUrl(
+                id = nextId,
+                protocol = parsedUrl.protocol,
+                host = parsedUrl.host,
+                path = parsedUrl.path,
+                url = url
+            )
+            return r2dbcEntityTemplate.insert(storedUrl).flatMap {
+                urlRepository.findById(nextId)
+            }.doOnNext {
+                urlStreamProducer.publishUrlEvent(it)
             }
-    }
+        }
 
-    fun transactionRunner(request: CreateBookmarkRequest, authentication: TwigAuthenticationToken): Mono<StoredBookmark> {
-        val operator = TransactionalOperator.create(reactiveTransactionManager)
-        return createBookmark(request, authentication).`as`(operator::transactional)
-    }
+        private fun createBookmark(): Mono<StoredBookmark> {
+            val url = request.url
+            val storedUrlMono = r2dbcEntityTemplate.selectOne(
+                Query.query(Criteria.where(StoredUrl::url.name).`is`(url)),
+                StoredUrl::class.java
+            )
 
-    fun execute(request: CreateBookmarkRequest, authentication: TwigAuthenticationToken): Mono<CreateBookmarkResponse> {
-        return transactionRunner(request, authentication).map {
-            CreateBookmarkResponse.newBuilder()
-                .setBookmark(
-                    Bookmark.newBuilder().setId(it.id)
-                        .setUrl(request.url)
-                        .build()
-                )
-                .build()
+            val nextId = uuidUtils.generateUUID()
+            return storedUrlMono.switchIfEmpty(this.createUrl(url))
+                .flatMap {
+                    val storedBookmark = StoredBookmark(
+                        id = nextId,
+                        urlId = it.id,
+                        // TODO(yuanchenxi), uses the user Id from request context.
+                        userId = authentication.getUserId()
+                    )
+                    r2dbcEntityTemplate.insert(storedBookmark)
+                }.flatMap {
+                    bookmarkRepository.findById(nextId)
+                }
+        }
+
+        private fun transactionRunner(): Mono<StoredBookmark> {
+            val operator = TransactionalOperator.create(reactiveTransactionManager)
+            return createBookmark().`as`(operator::transactional)
+        }
+
+        override fun execute(): Mono<CreateBookmarkResponse> {
+            return transactionRunner().map {
+                CreateBookmarkResponse.newBuilder()
+                    .setBookmark(
+                        Bookmark.newBuilder().setId(it.id)
+                            .setUrl(request.url)
+                            .build()
+                    )
+                    .build()
+            }
         }
     }
 }

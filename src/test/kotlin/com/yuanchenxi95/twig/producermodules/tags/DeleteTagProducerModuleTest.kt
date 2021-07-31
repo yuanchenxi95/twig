@@ -58,7 +58,9 @@ class DeleteTagProducerModuleTest : AbstractTestBase() {
             }
             .verifyComplete()
 
-        StepVerifier.create(deleteTagProducerModule.execute(tagName, TEST_AUTHENTICATION_TOKEN))
+        StepVerifier.create(
+            deleteTagProducerModule.Executor(tagName, TEST_AUTHENTICATION_TOKEN).execute()
+        )
             .assertNext {
                 assertThat(it).isEqualTo(DeleteTagResponse.newBuilder().build())
             }.verifyComplete()
@@ -81,7 +83,9 @@ class DeleteTagProducerModuleTest : AbstractTestBase() {
             }
             .verifyComplete()
 
-        StepVerifier.create(deleteTagProducerModule.execute(tagName, TEST_AUTHENTICATION_TOKEN))
+        StepVerifier.create(
+            deleteTagProducerModule.Executor(tagName, TEST_AUTHENTICATION_TOKEN).execute()
+        )
             .verifyErrorMessage("No such Tag.")
 
         StepVerifier.create(tagRepository.findAll().collectList())

@@ -18,7 +18,10 @@ class StoredTagsBookmarksService {
     @Autowired
     lateinit var uuidUtils: UuidUtils
 
-    fun batchCreateReferences(bookmarkId: String, tagIds: Iterable<String>): Mono<List<StoredTagsBookmarks>> {
+    fun batchCreateReferences(
+        bookmarkId: String,
+        tagIds: Iterable<String>
+    ): Mono<List<StoredTagsBookmarks>> {
         val createTagsBookmarksMono = tagIds.map {
             r2dbcEntityTemplate.insert(
                 StoredTagsBookmarks(

@@ -24,6 +24,7 @@ import reactor.test.StepVerifier
 class StoredUrlServiceTest : AbstractTestBase() {
     @Autowired
     private lateinit var template: R2dbcEntityTemplate
+
     @Autowired
     lateinit var storedUrlService: StoredUrlService
 

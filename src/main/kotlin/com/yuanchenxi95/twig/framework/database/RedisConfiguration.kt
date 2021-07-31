@@ -29,7 +29,9 @@ class RedisConfiguration {
         serializer.setObjectMapper(jacksonObjectMapper().registerModule(JavaTimeModule()))
 
         val builder =
-            RedisSerializationContext.newSerializationContext<String, StoredSession>(StringRedisSerializer())
+            RedisSerializationContext.newSerializationContext<String, StoredSession>(
+                StringRedisSerializer()
+            )
 
         val context = builder.value(serializer).build()
 
@@ -44,7 +46,9 @@ class RedisConfiguration {
             Jackson2JsonRedisSerializer(StoredUrl::class.java)
 
         val builder =
-            RedisSerializationContext.newSerializationContext<String, StoredUrl>(StringRedisSerializer())
+            RedisSerializationContext.newSerializationContext<String, StoredUrl>(
+                StringRedisSerializer()
+            )
 
         val context = builder.value(serializer).build()
 

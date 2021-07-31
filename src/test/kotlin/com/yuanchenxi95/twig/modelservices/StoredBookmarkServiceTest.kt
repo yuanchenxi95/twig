@@ -25,6 +25,7 @@ import reactor.test.StepVerifier
 class StoredBookmarkServiceTest : AbstractTestBase() {
     @Autowired
     private lateinit var template: R2dbcEntityTemplate
+
     @Autowired
     lateinit var storedBookmarkService: StoredBookmarkService
 

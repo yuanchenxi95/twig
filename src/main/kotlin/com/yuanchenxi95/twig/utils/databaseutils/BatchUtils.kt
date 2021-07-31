@@ -5,7 +5,11 @@ import org.springframework.data.relational.core.query.Criteria
 import org.springframework.data.relational.core.query.Query
 import reactor.core.publisher.Mono
 
-inline fun <reified T> selectList(otherCriteria: Criteria, criteriaList: Iterable<Criteria>, r2dbcEntityTemplate: R2dbcEntityTemplate): Mono<List<T>> {
+inline fun <reified T> selectList(
+    otherCriteria: Criteria,
+    criteriaList: Iterable<Criteria>,
+    r2dbcEntityTemplate: R2dbcEntityTemplate
+): Mono<List<T>> {
     if (criteriaList.none()) {
         return Mono.just(listOf())
     }
@@ -19,7 +23,11 @@ inline fun <reified T> selectList(otherCriteria: Criteria, criteriaList: Iterabl
     ).collectList()
 }
 
-inline fun <reified T> deleteList(otherCriteria: Criteria, criteriaList: Iterable<Criteria>, r2dbcEntityTemplate: R2dbcEntityTemplate): Mono<Int> {
+inline fun <reified T> deleteList(
+    otherCriteria: Criteria,
+    criteriaList: Iterable<Criteria>,
+    r2dbcEntityTemplate: R2dbcEntityTemplate
+): Mono<Int> {
     if (criteriaList.none()) {
         return Mono.just(0)
     }

@@ -16,7 +16,10 @@ class StoredBookmarkService {
     fun selectOneBookmark(userId: String, bookmarkId: String): Mono<StoredBookmark> {
         val userCriteria = getUserCriteria(userId)
         val bookmarkQuery = Criteria.where(StoredBookmark::id.name).`is`(bookmarkId)
-        return r2dbcEntityTemplate.selectOne(Query.query(userCriteria.and(bookmarkQuery)), StoredBookmark::class.java)
+        return r2dbcEntityTemplate.selectOne(
+            Query.query(userCriteria.and(bookmarkQuery)),
+            StoredBookmark::class.java
+        )
     }
 
     fun getUserCriteria(userId: String): Criteria {

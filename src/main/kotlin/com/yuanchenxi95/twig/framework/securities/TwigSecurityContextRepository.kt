@@ -30,8 +30,11 @@ class TwigSecurityContextRepository : ServerSecurityContextRepository {
         DefaultReactiveOAuth2UserService()
     )
 
-    override fun save(serverWebExchange: ServerWebExchange, securityContext: SecurityContext): Mono<Void> {
-        return loginUserProducerModule.execute(securityContext)
+    override fun save(
+        serverWebExchange: ServerWebExchange,
+        securityContext: SecurityContext
+    ): Mono<Void> {
+        return loginUserProducerModule.Executor(securityContext).execute()
             .map {
                 val responseCookieBuilder = ResponseCookie.from(AUTHORIZATION, it.id)
                 responseCookieBuilder
@@ -53,7 +56,7 @@ class TwigSecurityContextRepository : ServerSecurityContextRepository {
             return Mono.empty()
         }
 
-        return validateSessionProducerModule.execute(authorizationCookies[0].value)
+        return validateSessionProducerModule.Executor(authorizationCookies[0].value).execute()
             .map {
                 val twigAuthenticationToken = TwigAuthenticationToken(it)
                 SecurityContextImpl(twigAuthenticationToken)

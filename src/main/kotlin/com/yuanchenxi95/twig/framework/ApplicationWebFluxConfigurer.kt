@@ -67,6 +67,9 @@ class ApplicationWebFluxConfigurer : WebFluxConfigurer {
 
     @Bean
     fun staticResourceRouter(): RouterFunction<ServerResponse> {
-        return RouterFunctions.resources("/app/**", FileSystemResource(twigConfigurations.frontendDistDirectory))
+        return RouterFunctions.resources(
+            "/app/**",
+            FileSystemResource(twigConfigurations.frontendDistDirectory)
+        )
     }
 }

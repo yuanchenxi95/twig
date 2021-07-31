@@ -23,7 +23,8 @@ class GetUserInformationProducerModule {
         override fun execute(): Mono<GetUserInformationResponse> {
             return selectOneById<StoredUser>(authentication.getUserId(), r2dbcEntityTemplate)
                 .map {
-                    val expirationTime = convertInstantToTimestamp(authentication.getExpirationTime())
+                    val expirationTime =
+                        convertInstantToTimestamp(authentication.getExpirationTime())
                     GetUserInformationResponse.newBuilder()
                         .setId(it.id)
                         .setEmail(it.userEmail)

@@ -32,7 +32,10 @@ class GlobalErrorHandler : ErrorWebExceptionHandler {
         val dataBuffer = encodeProtobufValue(
             when (exception) {
                 is AuthFailedException -> generateAuthenticationError(exception)
-                else -> generateInternalServerError(exception, twigConfigurations.showInternalServerError)
+                else -> generateInternalServerError(
+                    exception,
+                    twigConfigurations.showInternalServerError
+                )
             },
             bufferFactory
         )
