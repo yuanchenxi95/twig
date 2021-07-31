@@ -41,7 +41,8 @@ class StoredTagService {
         userId: String,
         bookmarkId: String,
     ): Mono<List<StoredTag>> {
-        val bookmarkIdCriteria = Criteria.where(StoredTagsBookmarks::bookmarkId.name).`is`(bookmarkId)
+        val bookmarkIdCriteria =
+            Criteria.where(StoredTagsBookmarks::bookmarkId.name).`is`(bookmarkId)
         val storedTagsBookmarks = r2dbcEntityTemplate.select(
             Query.query(bookmarkIdCriteria),
             StoredTagsBookmarks::class.java

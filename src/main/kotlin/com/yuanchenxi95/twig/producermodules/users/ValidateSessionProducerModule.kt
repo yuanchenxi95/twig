@@ -1,6 +1,7 @@
 package com.yuanchenxi95.twig.producermodules.users
 
 import com.yuanchenxi95.twig.models.StoredSession
+import com.yuanchenxi95.twig.producermodules.ProducerModule
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.stereotype.Component
@@ -9,7 +10,7 @@ import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Mono
 
 @Component
-class ValidateSessionProducerModule {
+class ValidateSessionProducerModule : ProducerModule<StoredSession> {
 
     @Autowired
     lateinit var redisSessionTemplate: ReactiveRedisTemplate<String, StoredSession>
@@ -17,17 +18,22 @@ class ValidateSessionProducerModule {
     @Autowired
     lateinit var reactiveTransactionManager: ReactiveTransactionManager
 
-    fun validateStoredSession(sessionId: String): Mono<StoredSession> {
-        return redisSessionTemplate.opsForValue().get(sessionId)
-    }
+    inner class Executor(
+        private val sessionId: String
+    ) : ProducerModule.ProducerModuleExecutor<StoredSession?> {
 
-    fun transactionRunner(sessionId: String): Mono<StoredSession?> {
-        val operator = TransactionalOperator.create(reactiveTransactionManager)
-        return validateStoredSession(sessionId)
-            .`as`(operator::transactional)
-    }
+        private fun validateStoredSession(sessionId: String): Mono<StoredSession> {
+            return redisSessionTemplate.opsForValue().get(sessionId)
+        }
 
-    fun execute(sessionId: String): Mono<StoredSession?> {
-        return transactionRunner(sessionId)
+        private fun transactionRunner(sessionId: String): Mono<StoredSession?> {
+            val operator = TransactionalOperator.create(reactiveTransactionManager)
+            return validateStoredSession(sessionId)
+                .`as`(operator::transactional)
+        }
+
+        override fun execute(): Mono<StoredSession?> {
+            return transactionRunner(sessionId)
+        }
     }
 }

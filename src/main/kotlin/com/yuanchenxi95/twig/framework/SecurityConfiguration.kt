@@ -33,7 +33,8 @@ class SecurityConfiguration {
             val bufferFactory = response.bufferFactory()
             response.headers.contentType = MediaType.APPLICATION_JSON
             response.statusCode = HttpStatus.UNAUTHORIZED
-            val dataBuffer = encodeProtobufValue(generateAuthenticationError(exception), bufferFactory)
+            val dataBuffer =
+                encodeProtobufValue(generateAuthenticationError(exception), bufferFactory)
             response.writeWith(Mono.just(dataBuffer))
         }
 
@@ -43,7 +44,8 @@ class SecurityConfiguration {
                 val bufferFactory = response.bufferFactory()
                 response.headers.contentType = MediaType.APPLICATION_JSON
                 response.statusCode = HttpStatus.FORBIDDEN
-                val dataBuffer = encodeProtobufValue(generateAuthenticationError(exception), bufferFactory)
+                val dataBuffer =
+                    encodeProtobufValue(generateAuthenticationError(exception), bufferFactory)
                 response.writeWith(Mono.just(dataBuffer))
             }
 

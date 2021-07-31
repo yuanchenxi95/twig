@@ -5,7 +5,9 @@ import com.yuanchenxi95.protobuf.protobuf.api.TwigApiError
 import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
 import com.yuanchenxi95.twig.constants.RequestMappingValues
-import com.yuanchenxi95.twig.data.*
+import com.yuanchenxi95.twig.data.API_BOOKMARK_1
+import com.yuanchenxi95.twig.data.API_BOOKMARK_2
+import com.yuanchenxi95.twig.data.STORED_SESSION_1
 import com.yuanchenxi95.twig.framework.codecs.convertProtobufToJson
 import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.protobuf.api.Bookmark

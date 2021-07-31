@@ -3,6 +3,7 @@ package com.yuanchenxi95.twig.producermodules.tags
 import com.yuanchenxi95.twig.framework.securities.TwigAuthenticationToken
 import com.yuanchenxi95.twig.framework.utils.UuidUtils
 import com.yuanchenxi95.twig.models.StoredTag
+import com.yuanchenxi95.twig.producermodules.ProducerModule
 import com.yuanchenxi95.twig.protobuf.api.CreateTagRequest
 import com.yuanchenxi95.twig.protobuf.api.CreateTagResponse
 import com.yuanchenxi95.twig.protobuf.api.Tag
@@ -17,7 +18,7 @@ import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Mono
 
 @Component
-class CreateTagProducerModule {
+class CreateTagProducerModule : ProducerModule<CreateTagResponse> {
 
     @Autowired
     lateinit var reactiveTransactionManager: ReactiveTransactionManager
@@ -31,41 +32,50 @@ class CreateTagProducerModule {
     @Autowired
     lateinit var uuidUtils: UuidUtils
 
-    private fun createTag(request: CreateTagRequest, authentication: TwigAuthenticationToken): Mono<StoredTag> {
-        val name = request.name
-        val storedTagMono = r2dbcEntityTemplate.selectOne(
-            Query.query(Criteria.where(StoredTag::tagName.name).`is`(name).and(StoredTag::userId.name).`is`(authentication.getUserId())),
-            StoredTag::class.java
-        )
+    inner class Executor(
+        private val request: CreateTagRequest,
+        private val authentication: TwigAuthenticationToken
+    ) : ProducerModule.ProducerModuleExecutor<CreateTagResponse> {
 
-        val nextId = uuidUtils.generateUUID()
-        return storedTagMono.switchIfEmpty(
-            Mono.defer {
-                val storedTag = StoredTag(
-                    id = nextId,
-                    userId = authentication.getUserId(),
-                    tagName = name
-                )
-                r2dbcEntityTemplate.insert(storedTag)
+        private fun createTag(): Mono<StoredTag> {
+            val name = request.name
+            val storedTagMono = r2dbcEntityTemplate.selectOne(
+                Query.query(
+                    Criteria.where(StoredTag::tagName.name).`is`(name).and(StoredTag::userId.name)
+                        .`is`(authentication.getUserId())
+                ),
+                StoredTag::class.java
+            )
+
+            val nextId = uuidUtils.generateUUID()
+            return storedTagMono.switchIfEmpty(
+                Mono.defer {
+                    val storedTag = StoredTag(
+                        id = nextId,
+                        userId = authentication.getUserId(),
+                        tagName = name
+                    )
+                    r2dbcEntityTemplate.insert(storedTag)
+                }
+            ).flatMap {
+                tagRepository.findById(it.id)
             }
-        ).flatMap {
-            tagRepository.findById(it.id)
         }
-    }
 
-    fun transactionRunner(request: CreateTagRequest, authentication: TwigAuthenticationToken): Mono<StoredTag> {
-        val operator = TransactionalOperator.create(reactiveTransactionManager)
-        return createTag(request, authentication).`as`(operator::transactional)
-    }
+        private fun transactionRunner(): Mono<StoredTag> {
+            val operator = TransactionalOperator.create(reactiveTransactionManager)
+            return createTag().`as`(operator::transactional)
+        }
 
-    fun execute(request: CreateTagRequest, authentication: TwigAuthenticationToken): Mono<CreateTagResponse> {
-        return transactionRunner(request, authentication).map {
-            CreateTagResponse.newBuilder()
-                .setTag(
-                    Tag.newBuilder().setId(it.id)
-                        .setName(it.tagName)
-                )
-                .build()
+        override fun execute(): Mono<CreateTagResponse> {
+            return transactionRunner().map {
+                CreateTagResponse.newBuilder()
+                    .setTag(
+                        Tag.newBuilder().setId(it.id)
+                            .setName(it.tagName)
+                    )
+                    .build()
+            }
         }
     }
 }

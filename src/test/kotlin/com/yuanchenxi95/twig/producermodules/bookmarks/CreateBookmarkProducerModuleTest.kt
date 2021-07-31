@@ -54,7 +54,12 @@ internal class CreateBookmarkProducerModuleTest : AbstractTestBase() {
         val request = CreateBookmarkRequest.newBuilder()
             .setUrl(API_BOOKMARK_1.url)
             .build()
-        StepVerifier.create(createBookmarkProducerModule.execute(request, TEST_AUTHENTICATION_TOKEN))
+        StepVerifier.create(
+            createBookmarkProducerModule.Executor(
+                request,
+                TEST_AUTHENTICATION_TOKEN
+            ).execute()
+        )
             .consumeNextWith {
                 ProtoTruth.assertThat(it.bookmark)
                     .ignoringFields(Bookmark.ID_FIELD_NUMBER)

@@ -84,6 +84,7 @@ dependencies {
     testImplementation("io.projectreactor", "reactor-test")
     testImplementation("junit", "junit", "4.13.1")
     testImplementation("org.assertj", "assertj-core", "3.19.0")
+    testImplementation("org.mockito", "mockito-inline", "3.11.2")
     testImplementation("org.springframework.boot", "spring-boot-starter-test")
     testImplementation("org.springframework.security", "spring-security-test")
     testImplementation("org.testcontainers", "mysql", "1.15.3")

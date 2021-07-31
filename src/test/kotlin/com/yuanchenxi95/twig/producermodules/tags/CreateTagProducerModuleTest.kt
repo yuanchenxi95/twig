@@ -55,7 +55,9 @@ class CreateTagProducerModuleTest : AbstractTestBase() {
             .setName(TAG_NAME)
             .build()
 
-        StepVerifier.create(createTagProducerModule.execute(request, TEST_AUTHENTICATION_TOKEN))
+        StepVerifier.create(
+            createTagProducerModule.Executor(request, TEST_AUTHENTICATION_TOKEN).execute()
+        )
             .assertNext {
                 assertThat(it.tag.name).isEqualTo(TAG_NAME)
             }

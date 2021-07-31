@@ -26,7 +26,9 @@ class ProtobufJsonDecoder :
     ProtobufJsonCodecSupport(), Decoder<Message> {
 
     override fun canDecode(elementType: ResolvableType, mimeType: MimeType?): Boolean {
-        return Message::class.java.isAssignableFrom(elementType.toClass()) && supportsMimeType(mimeType)
+        return Message::class.java.isAssignableFrom(elementType.toClass()) && supportsMimeType(
+            mimeType
+        )
     }
 
     override fun decodeToMono(
@@ -61,7 +63,8 @@ class ProtobufJsonDecoder :
     ): Message {
         try {
             val builder: Message.Builder = getMessageBuilder(targetType.toClass())
-            val inputStream = ByteStreams.limit(dataBuffer.asInputStream(), DEFAULT_MESSAGE_MAX_SIZE)
+            val inputStream =
+                ByteStreams.limit(dataBuffer.asInputStream(), DEFAULT_MESSAGE_MAX_SIZE)
             val bytes = ByteStreams.toByteArray(inputStream)
             if (bytes.size >= DEFAULT_MESSAGE_MAX_SIZE) {
                 throw ServerWebInputException("Max message size '$DEFAULT_MESSAGE_MAX_SIZE' exceeds.")
@@ -74,7 +77,11 @@ class ProtobufJsonDecoder :
         } catch (ex: ServerWebInputException) {
             throw ex
         } catch (ex: Exception) {
-            throw ServerWebInputException("Could not read Protobuf message: " + ex.message, null, ex)
+            throw ServerWebInputException(
+                "Could not read Protobuf message: " + ex.message,
+                null,
+                ex
+            )
         } finally {
             DataBufferUtils.release(dataBuffer)
         }

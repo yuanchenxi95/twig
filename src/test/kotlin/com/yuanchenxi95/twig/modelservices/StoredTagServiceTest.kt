@@ -28,8 +28,10 @@ import reactor.test.StepVerifier
 class StoredTagServiceTest : AbstractTestBase() {
     @Autowired
     private lateinit var template: R2dbcEntityTemplate
+
     @Autowired
     lateinit var storedTagService: StoredTagService
+
     @Autowired
     lateinit var uuidUtils: UuidUtils
 

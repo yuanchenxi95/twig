@@ -10,7 +10,6 @@ import com.yuanchenxi95.twig.protobuf.api.GetUserInformationResponse
 import com.yuanchenxi95.twig.utils.TEST_AUTHENTICATION_TOKEN
 import com.yuanchenxi95.twig.utils.protobufutils.convertInstantToTimestamp
 import com.yuanchenxi95.twig.utils.setUpTestData
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -47,7 +46,8 @@ internal class GetUserInformationProducerModuleTest : AbstractTestBase() {
 
     @Test
     fun `get login user information`() {
-        val getUserInformationResponseExecutor = getUserInformationProducerModule.Executor(TEST_AUTHENTICATION_TOKEN)
+        val getUserInformationResponseExecutor =
+            getUserInformationProducerModule.Executor(TEST_AUTHENTICATION_TOKEN)
 
         StepVerifier.create(getUserInformationResponseExecutor.execute())
             .consumeNextWith {

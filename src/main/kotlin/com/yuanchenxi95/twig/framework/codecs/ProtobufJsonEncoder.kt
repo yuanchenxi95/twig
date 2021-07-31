@@ -17,7 +17,9 @@ import reactor.core.publisher.Flux
  */
 class ProtobufJsonEncoder : ProtobufJsonCodecSupport(), HttpMessageEncoder<Message> {
     override fun canEncode(elementType: ResolvableType, @Nullable mimeType: MimeType?): Boolean {
-        return Message::class.java.isAssignableFrom(elementType.toClass()) && supportsMimeType(mimeType)
+        return Message::class.java.isAssignableFrom(elementType.toClass()) && supportsMimeType(
+            mimeType
+        )
     }
 
     override fun encode(

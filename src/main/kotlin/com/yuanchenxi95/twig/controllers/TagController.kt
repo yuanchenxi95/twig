@@ -22,14 +22,20 @@ class TagController {
     private lateinit var deleteTagProducerModule: DeleteTagProducerModule
 
     @PostMapping(RequestMappingValues.CREATE_TAG)
-    fun createTag(@RequestBody request: CreateTagRequest, authentication: TwigAuthenticationToken): Mono<CreateTagResponse> {
+    fun createTag(
+        @RequestBody request: CreateTagRequest,
+        authentication: TwigAuthenticationToken
+    ): Mono<CreateTagResponse> {
         validateCreateTagRequest(request)
-        return createTagProducerModule.execute(request, authentication)
+        return createTagProducerModule.Executor(request, authentication).execute()
     }
 
     @DeleteMapping(RequestMappingValues.DELETE_TAG)
-    fun deleteTag(@PathVariable(value = "tagName") tagName: String, authentication: TwigAuthenticationToken): Mono<DeleteTagResponse> {
+    fun deleteTag(
+        @PathVariable(value = "tagName") tagName: String,
+        authentication: TwigAuthenticationToken
+    ): Mono<DeleteTagResponse> {
         validateDeleteTagRequest(tagName)
-        return deleteTagProducerModule.execute(tagName, authentication)
+        return deleteTagProducerModule.Executor(tagName, authentication).execute()
     }
 }

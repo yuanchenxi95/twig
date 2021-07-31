@@ -26,7 +26,7 @@ class BookmarkController {
         authentication: TwigAuthenticationToken
     ): Mono<CreateBookmarkResponse> {
         validateCreateBookmarkRequest(request)
-        return createBookmarkProducerModule.execute(request, authentication)
+        return createBookmarkProducerModule.Executor(request, authentication).execute()
     }
 
     @GetMapping(RequestMappingValues.LIST_BOOKMARK)
