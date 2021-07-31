@@ -28,7 +28,7 @@ fun generateNotImplementedError(exception: Throwable): TwigApiError {
 
 fun generateAuthenticationError(exception: Throwable): TwigApiError {
     return TwigApiError.newBuilder()
-        .setCode(403)
+        .setCode(401)
         .setErrorType(TwigApiError.ErrorType.AUTHENTICATION_ERROR)
         .setMessage(exception.message)
         .build()

@@ -24,6 +24,7 @@ sentry:
 twig:
   enableDatabaseSetup: false
   showInternalServerError: true
+  enableRedisCleanup: false
   frontendDistDirectory: './frontend/dist/'
 
 streams:

@@ -17,6 +17,7 @@ spring:
 twig:
   enableDatabaseSetup: true
   showInternalServerError: true
+  enableRedisCleanup: true
   frontendDistDirectory: './frontend/dist/'
 
 streams:

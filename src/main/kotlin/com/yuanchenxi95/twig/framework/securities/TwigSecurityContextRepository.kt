@@ -2,9 +2,9 @@ package com.yuanchenxi95.twig.framework.securities
 
 import com.yuanchenxi95.twig.producermodules.users.LoginUserProducerModule
 import com.yuanchenxi95.twig.producermodules.users.ValidateSessionProducerModule
+import com.yuanchenxi95.twig.utils.httputils.generateResponseCookie
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders.AUTHORIZATION
-import org.springframework.http.ResponseCookie
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextImpl
 import org.springframework.security.oauth2.client.authentication.OAuth2LoginReactiveAuthenticationManager
@@ -36,16 +36,11 @@ class TwigSecurityContextRepository : ServerSecurityContextRepository {
     ): Mono<Void> {
         return loginUserProducerModule.Executor(securityContext).execute()
             .map {
-                val responseCookieBuilder = ResponseCookie.from(AUTHORIZATION, it.id)
-                responseCookieBuilder
-                    .httpOnly(true)
-                    .path("/")
-                    .sameSite("Strict")
-                    // TODO(yuanchenxi95), check the request is HTTP or HTTPS.
-                    .secure(false)
-                    // TODO(yuanchenxi95) Take in the expiration time from the config file.
-                    .maxAge(Duration.ofDays(30))
-                serverWebExchange.response.addCookie(responseCookieBuilder.build())
+                serverWebExchange.response.addCookie(
+                    generateResponseCookie(
+                        AUTHORIZATION, it.id, Duration.ofDays(30)
+                    )
+                )
             }.then()
     }
 

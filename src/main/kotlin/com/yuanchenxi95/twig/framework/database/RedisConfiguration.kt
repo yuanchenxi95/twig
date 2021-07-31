@@ -2,6 +2,7 @@ package com.yuanchenxi95.twig.framework.database
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.yuanchenxi95.twig.application.TwigConfigurations
 import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.models.StoredUrl
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,6 +20,9 @@ import javax.annotation.PreDestroy
 class RedisConfiguration {
     @Autowired
     lateinit var factory: RedisConnectionFactory
+
+    @Autowired
+    lateinit var twigConfigurations: TwigConfigurations
 
     @Bean
     fun reactiveRedisTemplateForSession(
@@ -57,7 +61,9 @@ class RedisConfiguration {
 
     @PreDestroy
     fun cleanRedis() {
-        factory.connection
-            .flushDb()
+        if (twigConfigurations.enableRedisCleanup) {
+            factory.connection
+                .flushDb()
+        }
     }
 }
