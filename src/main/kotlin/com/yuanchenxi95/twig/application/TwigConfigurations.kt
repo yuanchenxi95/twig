@@ -8,5 +8,6 @@ import org.springframework.boot.context.properties.ConstructorBinding
 data class TwigConfigurations(
     val enableDatabaseSetup: Boolean,
     val showInternalServerError: Boolean,
+    val enableRedisCleanup: Boolean,
     val frontendDistDirectory: String,
 )

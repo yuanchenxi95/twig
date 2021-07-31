@@ -22,6 +22,10 @@ class TwigAuthenticationToken(
         throw NotImplementedError("getPrincipal() not implemented.")
     }
 
+    fun getSessionId(): String {
+        return this.storedSession!!.id
+    }
+
     fun getUserId(): String {
         return this.storedSession!!.userId
     }

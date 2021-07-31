@@ -11,5 +11,7 @@ class RequestMappingValues {
         const val DELETE_TAG = "/api/tags/{tagName}"
 
         const val GET_USER_INFORMATION = "/api/users/me"
+
+        const val SIGN_OUT = "/api/signout"
     }
 }
