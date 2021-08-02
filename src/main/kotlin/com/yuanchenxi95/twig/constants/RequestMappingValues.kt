@@ -7,6 +7,8 @@ class RequestMappingValues {
         const val CREATE_BOOKMARK = "/api/bookmarks"
         const val LIST_BOOKMARK = "/api/bookmarks"
         const val UPDATE_BOOKMARK = "/api/bookmarks/{$BOOKMARK_ID}"
+
+        const val LIST_TAG = "/api/tags"
         const val CREATE_TAG = "/api/tags"
         const val DELETE_TAG = "/api/tags/{tagName}"
 

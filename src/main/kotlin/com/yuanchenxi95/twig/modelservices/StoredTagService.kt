@@ -29,6 +29,15 @@ class StoredTagService {
         return selectList(getUserCriteria(userId), tagNamesCriteria, r2dbcEntityTemplate)
     }
 
+    fun queryTagsForUser(userId: String): Mono<List<StoredTag>> {
+        return r2dbcEntityTemplate.select(
+            Query.query(
+                Criteria.where(StoredTag::userId.name).`is`(userId)
+            ),
+            StoredTag::class.java
+        ).collectList()
+    }
+
     fun queryTagsForUserByTagIds(
         userId: String,
         tagIds: Iterable<String>,
