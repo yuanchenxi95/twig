@@ -1,17 +1,14 @@
+import { Layout } from 'antd';
 import React from 'react';
-import { Tag } from './proto/api/tag';
-import { TagCard } from './components/tag/Tag';
-
-const tag: Tag = {
-    id: '1',
-    name: 'Foo',
-};
+import './app.less';
+import { AppHeader } from './containers/app_header/app_header';
+import { RootRoute } from './routes/routes';
 
 export function App() {
     return (
-        <div>
-            <h1>Hello world!</h1>
-            <TagCard tag={tag} />
-        </div>
+        <Layout className={'app-layout'}>
+            <AppHeader />
+            <RootRoute />
+        </Layout>
     );
 }
