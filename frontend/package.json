@@ -5,12 +5,14 @@
     "license": "MIT",
     "scripts": {
         "start": "npx parcel serve ./src/index.html ./dist --public-url /app",
+        "tsc": "npx tsc -p ./ --noEmit",
+        "tsc-watch": "npx tsc -p ./ --noEmit --watch",
         "build": "node bundle.js",
         "ci-build": "yarn && node bundle.js",
         "format": "npx eslint ./src --fix",
         "lint": "npx eslint ./src ",
         "test": "npx jest",
-        "genrate-ts-proto": "protoc ../protobuf/**/*.proto --proto_path=../protobuf --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./src/proto --ts_proto_opt=env=browser,esModuleInterop=true,outputEncodeMethods=false,outputJsonMethods=true,outputClientImpl=false,useOptionals=true"
+        "genrate-ts-proto": "node bundle.js --generate-proto-only"
     },
     "devDependencies": {
         "@babel/core": "~7.14.6",
@@ -22,6 +24,7 @@
         "@types/node": "^16.3.2",
         "@types/react": "^17.0.14",
         "@types/react-dom": "^17.0.9",
+        "@types/react-router-dom": "^5.1.8",
         "@typescript-eslint/eslint-plugin": "^4.28.2",
         "@typescript-eslint/parser": "^4.28.2",
         "eslint": "^7.30.0",
@@ -31,6 +34,7 @@
         "jest-cli": "^27.0.6",
         "jest-config": "^27.0.6",
         "jest-styled-components": "^7.0.5",
+        "less": "^4.1.1",
         "parcel-bundler": "^1.12.5",
         "parcel-plugin-clean-dist": "^0.0.6",
         "prettier": "~2.3.2",
@@ -40,14 +44,26 @@
         "typescript": "^4.3.5"
     },
     "dependencies": {
+        "antd": "^4.16.7",
         "axios": "^0.21.1",
+        "connected-react-router": "^6.9.1",
+        "history": "^4.10.1",
+        "protobufjs": "^6.11.2",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
         "react-is": "^17.0.2",
+        "react-redux": "^7.2.4",
+        "react-router": "^5.2.0",
+        "react-router-dom": "^5.2.0",
+        "redux": "^4.1.0",
+        "redux-observable": "^2.0.0",
+        "reselect": "^4.0.0",
+        "rxjs": "^7.2.0",
         "src": "^1.1.2",
-        "styled-components": "^5.3.0"
+        "styled-components": "^5.3.0",
+        "typesafe-actions": "^5.1.0"
     },
     "alias": {
-        "~": "./src"
+        "proto": "./src/proto"
     }
 }

@@ -23,7 +23,7 @@ const options = {
     contentHash: true, // Disable content hash from being included on the filename
     global: 'moduleName', // Expose modules as UMD under this name, disabled by default
     minify: true, // Minify files, enabled if process.env.NODE_ENV === 'production'
-    scopeHoist: true, // Turn on experimental scope hoisting/tree shaking flag, for smaller production bundles
+    scopeHoist: false, // Turn on experimental scope hoisting/tree shaking flag, for smaller production bundles
     target: 'browser', // Browser/node/electron, defaults to browser
     bundleNodeModules: true, // By default, package.json dependencies are not included when using 'node' or 'electron' with 'target' option above. Set to true to adds them to the bundle, false by default
     logLevel: 3, // 5 = save everything to a file, 4 = like 3, but with timestamps and additionally log http requests to dev server, 3 = log info, warnings & errors, 2 = log warnings & errors, 1 = log errors
@@ -76,7 +76,13 @@ async function generateProto() {
 
 async function build() {
     await generateProto();
+
+    if (process.argv.indexOf('--generate-proto-only') !== -1) {
+        console.log('Generates proto only.');
+        return;
+    }
     await bundle();
+    console.log('Build completed.');
 }
 
 (async function () {

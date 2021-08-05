@@ -11,17 +11,17 @@
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "noImplicitAny": true,
+        "noEmitOnError": true,
         "strictNullChecks": true,
         "baseUrl": "./",
         "rootDir": "./",
         "typeRoots": ["./node_modules/@types"],
         "allowSyntheticDefaultImports": true,
         "paths": {
-            "~/*": ["src/*"]
+            "proto/*": ["src/proto/*"]
         },
         "esModuleInterop": true,
-        "importsNotUsedAsValues": "preserve",
-        "incremental": true
+        "importsNotUsedAsValues": "preserve"
     },
     "include": ["src"],
     "exclude": ["**/node_modules", "**/.*/"]
