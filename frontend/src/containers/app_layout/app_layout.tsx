@@ -7,10 +7,10 @@ import './app_layout.less';
 
 export function AppLayout() {
     return (
-        <Layout>
+        <Layout className={'app-layout'}>
             <AppSider />
 
-            <Content>
+            <Content className={'app-content'}>
                 <AppRoutes />
             </Content>
         </Layout>

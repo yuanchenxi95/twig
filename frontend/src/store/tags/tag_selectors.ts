@@ -15,7 +15,12 @@ export const selectTagList = createSelector(selectTagMapById, (tagMapById) => {
     return Array.from(tagMapById.values());
 });
 
-export const selectIsTagListLoading = createSelector(
+export const selectIsTagLoading = createSelector(
     selectTagState,
     (state) => state.loadingState === LoadingState.LOADING,
+);
+
+export const selectTagLoadingState = createSelector(
+    selectTagState,
+    (state) => state.loadingState,
 );

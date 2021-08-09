@@ -1,8 +1,14 @@
 import { Tag } from 'proto/api/tag';
 import { createReducer } from 'typesafe-actions';
 import { LoadingState } from '../../common/loading_state';
+import { showErrorNotification } from '../../common/notification';
 
-import { TagActionType, tagListAsyncAction } from './tag_actions';
+import {
+    TagActionType,
+    tagCreateAsyncAction,
+    tagDeleteAsyncAction,
+    tagListAsyncAction,
+} from './tag_actions';
 
 export interface TagState {
     tagMapById: ReadonlyMap<string, Tag>;
@@ -19,25 +25,73 @@ export const tagState: TagState = {
 };
 
 export const tagReducer = createReducer<TagState, TagActionType>(tagState)
-    .handleAction(tagListAsyncAction.request, (state) => {
-        return {
-            ...state,
-            loadingState: LoadingState.LOADING,
-        };
-    })
-    .handleAction(tagListAsyncAction.success, (state, action) => {
-        const listTagResponse = action.payload;
-        const tagMapById = new Map(
-            listTagResponse.tags.map((tag) => [tag.id, tag]),
-        );
+    .handleAction(
+        [
+            tagListAsyncAction.request,
+            tagDeleteAsyncAction.request,
+            tagCreateAsyncAction.request,
+        ],
+        (state) => {
+            return {
+                ...state,
+                loadingState: LoadingState.LOADING,
+            };
+        },
+    )
+    .handleAction(
+        tagListAsyncAction.success,
+        (state, { payload: listTagResponse }) => {
+            const tagMapById = new Map(
+                listTagResponse.tags.map((tag) => [tag.id, tag]),
+            );
+            return {
+                ...state,
+                tagMapById,
+                loadingState: LoadingState.SUCCEEDED,
+            };
+        },
+    )
+    .handleAction(tagDeleteAsyncAction.success, (state, { payload: tagId }) => {
+        const tagMapById = new Map(state.tagMapById);
+        tagMapById.delete(tagId);
+
         return {
             ...state,
             tagMapById,
             loadingState: LoadingState.SUCCEEDED,
         };
     })
-    .handleAction(tagListAsyncAction.failure, (state) => ({
-        ...state,
-        tagMapById: new Map(),
-        loadingState: LoadingState.FAILED,
-    }));
+    .handleAction(
+        tagCreateAsyncAction.success,
+        (state, { payload: createTagResponse }) => {
+            const { tag } = createTagResponse;
+            if (tag == null) {
+                return state;
+            }
+            const tagMapById = new Map();
+            tagMapById.set(tag.id, tag);
+            for (const [key, value] of state.tagMapById.entries()) {
+                tagMapById.set(key, value);
+            }
+            return {
+                ...state,
+                tagMapById,
+                loadingState: LoadingState.SUCCEEDED,
+            };
+        },
+    )
+    .handleAction(
+        [
+            tagListAsyncAction.failure,
+            tagDeleteAsyncAction.failure,
+            tagCreateAsyncAction.failure,
+        ],
+        (state, action) => {
+            showErrorNotification(action.payload.message);
+            return {
+                ...state,
+                tagMapById: new Map(),
+                loadingState: LoadingState.FAILED,
+            };
+        },
+    );
