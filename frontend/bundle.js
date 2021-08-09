@@ -2,6 +2,27 @@
 const Bundler = require('parcel-bundler');
 const Path = require('path');
 const shelljs = require('shelljs');
+const fs = require('fs');
+
+////////////////////////////////
+// Fixes the bug 'Ant Table in minified production deployment crashes'
+// https://github.com/ant-design/ant-design/issues/22943#issuecomment-614483120
+const fileList = ['BodyContext', 'ResizeContext', 'TableContext'];
+console.log(__dirname);
+const folder = Path.resolve(__dirname, './node_modules/rc-table/es/context');
+
+fileList.forEach((item) => {
+    const file = Path.resolve(folder, item + '.js');
+    const context = fs.readFileSync(file).toString();
+
+    if (!/twig_obfuscation_/gm.test(context)) {
+        fs.writeFileSync(
+            file,
+            `${context}export function twig_obfuscation_${item}(){};`,
+        );
+    }
+});
+////////////////////////////////
 
 // Single entrypoint file location:
 const entryFiles = Path.join(__dirname, './src/index.html');
