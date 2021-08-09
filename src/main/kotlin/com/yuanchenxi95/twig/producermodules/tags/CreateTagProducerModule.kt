@@ -1,5 +1,6 @@
 package com.yuanchenxi95.twig.producermodules.tags
 
+import com.yuanchenxi95.twig.exceptions.OperationFailedException
 import com.yuanchenxi95.twig.framework.securities.TwigAuthenticationToken
 import com.yuanchenxi95.twig.framework.utils.UuidUtils
 import com.yuanchenxi95.twig.models.StoredTag
@@ -37,19 +38,24 @@ class CreateTagProducerModule : ProducerModule<CreateTagResponse> {
         private val authentication: TwigAuthenticationToken
     ) : ProducerModule.ProducerModuleExecutor<CreateTagResponse> {
 
-        private fun createTag(): Mono<StoredTag> {
+        private fun validateTagNotExist(): Mono<Void> {
             val name = request.name
-            val storedTagMono = r2dbcEntityTemplate.selectOne(
+            return r2dbcEntityTemplate.selectOne(
                 Query.query(
                     Criteria.where(StoredTag::tagName.name).`is`(name).and(StoredTag::userId.name)
                         .`is`(authentication.getUserId())
                 ),
                 StoredTag::class.java
             )
+                .flatMap { Mono.defer { throw OperationFailedException("Tag with name '$name' already exists.") } }
+        }
 
-            val nextId = uuidUtils.generateUUID()
-            return storedTagMono.switchIfEmpty(
+        private fun createTag(): Mono<StoredTag> {
+            val name = request.name
+
+            return validateTagNotExist().then(
                 Mono.defer {
+                    val nextId = uuidUtils.generateUUID()
                     val storedTag = StoredTag(
                         id = nextId,
                         userId = authentication.getUserId(),
@@ -57,9 +63,7 @@ class CreateTagProducerModule : ProducerModule<CreateTagResponse> {
                     )
                     r2dbcEntityTemplate.insert(storedTag)
                 }
-            ).flatMap {
-                tagRepository.findById(it.id)
-            }
+            )
         }
 
         private fun transactionRunner(): Mono<StoredTag> {

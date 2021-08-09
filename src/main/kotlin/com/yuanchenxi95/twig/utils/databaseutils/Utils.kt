@@ -1,5 +1,7 @@
 package com.yuanchenxi95.twig.utils.databaseutils
 
+import reactor.core.publisher.Mono
+
 /**
  * Computes the diff between left set and right set
  * e.g. leftSet: {a, b, c}, rightSet: {b, c, d}. -> Pair({a}, {d})
@@ -22,4 +24,8 @@ fun <T> concatList(vararg itemsList: List<T>): List<T> {
         result.addAll(items)
     }
     return result
+}
+
+fun mapDeleteIntToBoolean(count: Int): Mono<Boolean> {
+    return if (count == 0) Mono.empty() else Mono.just(true)
 }

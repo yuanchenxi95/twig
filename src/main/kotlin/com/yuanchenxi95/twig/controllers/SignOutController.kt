@@ -20,9 +20,18 @@ class SignOutController {
     lateinit var storedSessionService: StoredSessionService
 
     @PostMapping(RequestMappingValues.SIGN_OUT)
-    fun deleteTag(serverWebExchange: ServerWebExchange, authentication: TwigAuthenticationToken): Mono<Empty> {
+    fun deleteTag(
+        serverWebExchange: ServerWebExchange,
+        authentication: TwigAuthenticationToken
+    ): Mono<Empty> {
 
-        serverWebExchange.response.addCookie(generateResponseCookie(HttpHeaders.AUTHORIZATION, "", Duration.ofSeconds(0)))
+        serverWebExchange.response.addCookie(
+            generateResponseCookie(
+                HttpHeaders.AUTHORIZATION,
+                "",
+                Duration.ofSeconds(0)
+            )
+        )
 
         return storedSessionService.deleteSession(authentication.getSessionId())
             .map {

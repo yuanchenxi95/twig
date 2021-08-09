@@ -73,7 +73,12 @@ class SignOutControllerWebClientTests : AbstractTestBase() {
             .expectStatus()
             .isUnauthorized
 
-        StepVerifier.create(getResponse(secondSignOutResponseSpec, TwigApiError.getDefaultInstance()))
+        StepVerifier.create(
+            getResponse(
+                secondSignOutResponseSpec,
+                TwigApiError.getDefaultInstance()
+            )
+        )
             .assertNext {
                 Truth.assertThat(it.code)
                     .isEqualTo(401)

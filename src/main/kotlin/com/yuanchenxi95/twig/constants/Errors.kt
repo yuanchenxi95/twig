@@ -10,6 +10,14 @@ fun generateInternalServerError(exception: Throwable, showInternalError: Boolean
         .build()
 }
 
+fun generateOperationFailedError(exception: Throwable): TwigApiError {
+    return TwigApiError.newBuilder()
+        .setCode(400)
+        .setErrorType(TwigApiError.ErrorType.OPERATION_FAILED_ERROR)
+        .setMessage(exception.message)
+        .build()
+}
+
 fun generateBadRequestError(exception: Throwable): TwigApiError {
     return TwigApiError.newBuilder()
         .setCode(400)
