@@ -1,4 +1,5 @@
-import { map, Observable } from 'rxjs';
+import { TwigApiError, TwigApiError_ErrorType } from 'proto/api/twig_api_error';
+import { catchError, map, Observable, throwError } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
 
 export enum HttpMethod {
@@ -29,7 +30,21 @@ export class AjaxClient {
                 'Content-Type': 'application/json',
             },
             body,
-        }).pipe(map((ajaxResponse) => ajaxResponse.response));
+        }).pipe(
+            map((ajaxResponse) => ajaxResponse.response),
+            catchError((error) => {
+                if (error.response?.message != null) {
+                    return throwError(() => error.response);
+                } else {
+                    const unknownError: TwigApiError = {
+                        code: 400,
+                        errorType: TwigApiError_ErrorType.UNKNOWN,
+                        message: 'Twig server failed to respond with an error.',
+                    };
+                    return throwError(() => unknownError);
+                }
+            }),
+        );
     }
 
     get<R>(path: string): Observable<R> {
@@ -49,7 +64,7 @@ export class AjaxClient {
 
     put<T, R>(path: string, body: T): Observable<R> {
         return this.request({
-            httpMethod: HttpMethod.POST,
+            httpMethod: HttpMethod.PUT,
             path,
             body,
         });
@@ -57,7 +72,7 @@ export class AjaxClient {
 
     delete<R>(path: string): Observable<R> {
         return this.request({
-            httpMethod: HttpMethod.POST,
+            httpMethod: HttpMethod.DELETE,
             path,
         });
     }
