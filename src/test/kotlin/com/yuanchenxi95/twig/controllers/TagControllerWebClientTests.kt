@@ -6,6 +6,7 @@ import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
 import com.yuanchenxi95.twig.constants.RequestMappingValues
 import com.yuanchenxi95.twig.constants.RequestMappingValues.Companion.CREATE_TAG
+import com.yuanchenxi95.twig.data.INVALID_UUID
 import com.yuanchenxi95.twig.data.STORED_SESSION_1
 import com.yuanchenxi95.twig.data.STORED_TAG_1
 import com.yuanchenxi95.twig.framework.codecs.convertProtobufToJson
@@ -27,7 +28,6 @@ import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
-import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
 @WebFluxTest(
@@ -150,13 +150,7 @@ class TagControllerWebClientTests : AbstractTestBase() {
             .bodyValue(convertProtobufToJson(request))
             .exchange()
             .expectStatus()
-            .isOk
-
-        val response2 = getResponse(responseSpec2, CreateTagResponse.getDefaultInstance())
-
-        StepVerifier.create(Mono.sequenceEqual(response1, response2))
-            .expectNext(true)
-            .verifyComplete()
+            .isBadRequest
 
         StepVerifier.create(tagRepository.findAll().collectList())
             .assertNext {
@@ -169,10 +163,8 @@ class TagControllerWebClientTests : AbstractTestBase() {
     fun `delete tag should success`() {
         setUpTagData(template).block()
 
-        val tagName = STORED_TAG_1.tagName
-
         val responseSpec = client.delete()
-            .uri(RequestMappingValues.DELETE_TAG, tagName)
+            .uri(RequestMappingValues.DELETE_TAG, STORED_TAG_1.id)
             .cookies {
                 it.add(HttpHeaders.AUTHORIZATION, STORED_SESSION_1.id)
             }
@@ -197,7 +189,7 @@ class TagControllerWebClientTests : AbstractTestBase() {
     fun `delete not existed tag should fail`() {
         setUpTagData(template).block()
 
-        val tagName = STORED_TAG_1.tagName + "NotExisted"
+        val tagName = INVALID_UUID
 
         val responseSpec = client.delete()
             .uri(RequestMappingValues.DELETE_TAG, tagName)
@@ -210,7 +202,7 @@ class TagControllerWebClientTests : AbstractTestBase() {
 
         StepVerifier.create(getResponse(responseSpec, TwigApiError.getDefaultInstance()))
             .assertNext {
-                assertThat(it.message).isEqualTo("No such Tag.")
+                assertThat(it.message).isEqualTo("Tag '$INVALID_UUID' not found.")
             }
             .verifyComplete()
 
@@ -224,10 +216,9 @@ class TagControllerWebClientTests : AbstractTestBase() {
 
     @Test
     fun `delete tag from empty repo should fail`() {
-        val tagName = STORED_TAG_1.tagName + "NotExisted"
 
         val responseSpec = client.delete()
-            .uri(RequestMappingValues.DELETE_TAG, tagName)
+            .uri(RequestMappingValues.DELETE_TAG, INVALID_UUID)
             .cookies {
                 it.add(HttpHeaders.AUTHORIZATION, STORED_SESSION_1.id)
             }
@@ -237,7 +228,7 @@ class TagControllerWebClientTests : AbstractTestBase() {
 
         StepVerifier.create(getResponse(responseSpec, TwigApiError.getDefaultInstance()))
             .assertNext {
-                assertThat(it.message).isEqualTo("No such Tag.")
+                assertThat(it.message).isEqualTo("Tag '$INVALID_UUID' not found.")
             }
             .verifyComplete()
 

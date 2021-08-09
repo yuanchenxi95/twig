@@ -6,6 +6,7 @@ import com.yuanchenxi95.twig.models.StoredTagsBookmarks
 import com.yuanchenxi95.twig.utils.databaseutils.selectList
 import com.yuanchenxi95.twig.utils.reactorutils.parallelExecuteWithLimit
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Sort
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria
 import org.springframework.data.relational.core.query.Query
@@ -33,7 +34,7 @@ class StoredTagService {
         return r2dbcEntityTemplate.select(
             Query.query(
                 Criteria.where(StoredTag::userId.name).`is`(userId)
-            ),
+            ).sort(Sort.by(StoredTag::createTime.name).descending()),
             StoredTag::class.java
         ).collectList()
     }

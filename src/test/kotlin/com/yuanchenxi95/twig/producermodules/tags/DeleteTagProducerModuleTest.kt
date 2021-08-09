@@ -3,6 +3,7 @@ package com.yuanchenxi95.twig.producermodules.tags
 import com.google.common.truth.Truth.assertThat
 import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
+import com.yuanchenxi95.twig.data.INVALID_UUID
 import com.yuanchenxi95.twig.data.STORED_TAG_1
 import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.protobuf.api.DeleteTagResponse
@@ -49,17 +50,17 @@ class DeleteTagProducerModuleTest : AbstractTestBase() {
 
     @Test
     fun `delete tag`() {
-        val tagName = STORED_TAG_1.tagName
+        val tagId = STORED_TAG_1.id
 
         StepVerifier.create(tagRepository.findAll().collectList())
             .assertNext {
                 assertThat(it.size).isEqualTo(1)
-                assertThat(it[0].tagName).isEqualTo(STORED_TAG_1.tagName)
+                assertThat(it[0].id).isEqualTo(STORED_TAG_1.id)
             }
             .verifyComplete()
 
         StepVerifier.create(
-            deleteTagProducerModule.Executor(tagName, TEST_AUTHENTICATION_TOKEN).execute()
+            deleteTagProducerModule.Executor(tagId, TEST_AUTHENTICATION_TOKEN).execute()
         )
             .assertNext {
                 assertThat(it).isEqualTo(DeleteTagResponse.newBuilder().build())
@@ -74,7 +75,7 @@ class DeleteTagProducerModuleTest : AbstractTestBase() {
 
     @Test
     fun `delete not existed tag throw exception`() {
-        val tagName = STORED_TAG_1.tagName + "NotExisted"
+        val tagId = INVALID_UUID
 
         StepVerifier.create(tagRepository.findAll().collectList())
             .assertNext {
@@ -84,9 +85,9 @@ class DeleteTagProducerModuleTest : AbstractTestBase() {
             .verifyComplete()
 
         StepVerifier.create(
-            deleteTagProducerModule.Executor(tagName, TEST_AUTHENTICATION_TOKEN).execute()
+            deleteTagProducerModule.Executor(tagId, TEST_AUTHENTICATION_TOKEN).execute()
         )
-            .verifyErrorMessage("No such Tag.")
+            .verifyErrorMessage("Tag '$INVALID_UUID' not found.")
 
         StepVerifier.create(tagRepository.findAll().collectList())
             .assertNext {

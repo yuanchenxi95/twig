@@ -16,6 +16,7 @@ message TwigApiError {
         BAD_REQUEST = 15;
         AUTHENTICATION_ERROR = 20;
         NOT_IMPLEMENTED_ERROR = 25;
+        OPERATION_FAILED_ERROR = 30;
     }
 
     uint32 code = 1;

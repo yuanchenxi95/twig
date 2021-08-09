@@ -37,11 +37,11 @@ class TagController {
 
     @DeleteMapping(RequestMappingValues.DELETE_TAG)
     fun deleteTag(
-        @PathVariable(value = "tagName") tagName: String,
+        @PathVariable(value = RequestMappingValues.TAG_ID) tagId: String,
         authentication: TwigAuthenticationToken
     ): Mono<DeleteTagResponse> {
-        validateDeleteTagRequest(tagName)
-        return deleteTagProducerModule.Executor(tagName, authentication).execute()
+        validateDeleteTagRequest(tagId)
+        return deleteTagProducerModule.Executor(tagId, authentication).execute()
     }
 
     @GetMapping(RequestMappingValues.LIST_TAG)

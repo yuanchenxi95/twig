@@ -9,5 +9,5 @@ fun validateCreateTagRequest(request: CreateTagRequest) {
 }
 
 fun validateDeleteTagRequest(tagName: String?) {
-    validationAssert(!tagName.isNullOrBlank(), "Tag name must not be null.")
+    validationAssert(!tagName.isNullOrBlank(), "Tag id must not be null.")
 }

@@ -4,7 +4,9 @@ import com.yuanchenxi95.protobuf.protobuf.api.TwigApiError
 import com.yuanchenxi95.twig.constants.generateAuthenticationError
 import com.yuanchenxi95.twig.constants.generateBadRequestError
 import com.yuanchenxi95.twig.constants.generateNotImplementedError
+import com.yuanchenxi95.twig.constants.generateOperationFailedError
 import com.yuanchenxi95.twig.exceptions.AuthFailedException
+import com.yuanchenxi95.twig.exceptions.OperationFailedException
 import com.yuanchenxi95.twig.exceptions.ResourceNotFoundException
 import com.yuanchenxi95.twig.framework.validation.ValidationError
 import org.springframework.http.HttpStatus
@@ -30,12 +32,22 @@ class ApplicationErrorHandler {
     }
 
     @ExceptionHandler(value = [ResourceNotFoundException::class])
-    fun tagNotFoundExceptionHandler(exception: ResourceNotFoundException): ResponseEntity<TwigApiError> {
+    fun resourceNotFoundExceptionHandler(exception: ResourceNotFoundException): ResponseEntity<TwigApiError> {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .contentType(APPLICATION_JSON)
             .body(
                 generateBadRequestError(exception)
+            )
+    }
+
+    @ExceptionHandler(value = [OperationFailedException::class])
+    fun operationFailedExceptionHandler(exception: OperationFailedException): ResponseEntity<TwigApiError> {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .contentType(APPLICATION_JSON)
+            .body(
+                generateOperationFailedError(exception)
             )
     }
 
