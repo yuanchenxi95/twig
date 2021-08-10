@@ -3,12 +3,12 @@ package com.yuanchenxi95.twig.controllers
 import com.yuanchenxi95.twig.constants.RequestMappingValues
 import com.yuanchenxi95.twig.framework.securities.TwigAuthenticationToken
 import com.yuanchenxi95.twig.producermodules.bookmarks.CreateBookmarkProducerModule
+import com.yuanchenxi95.twig.producermodules.bookmarks.ListBookmarkProducerModule
 import com.yuanchenxi95.twig.producermodules.bookmarks.UpdateBookmarkProducerModule
 import com.yuanchenxi95.twig.protobuf.api.*
 import com.yuanchenxi95.twig.validators.validateCreateBookmarkRequest
 import com.yuanchenxi95.twig.validators.validateUpdateBookmarkRequest
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
@@ -20,6 +20,9 @@ class BookmarkController {
     @Autowired
     private lateinit var updateBookmarkProducerModule: UpdateBookmarkProducerModule
 
+    @Autowired
+    private lateinit var listBookmarkProducerModule: ListBookmarkProducerModule
+
     @PostMapping(RequestMappingValues.CREATE_BOOKMARK)
     fun createBookmark(
         @RequestBody request: CreateBookmarkRequest,
@@ -30,8 +33,10 @@ class BookmarkController {
     }
 
     @GetMapping(RequestMappingValues.LIST_BOOKMARK)
-    fun listBookmarks(authentication: Authentication): Mono<ListBookmarkResponse> {
-        TODO("Not yet implemented")
+    fun listBookmarks(
+        authentication: TwigAuthenticationToken
+    ): Mono<ListBookmarkResponse> {
+        return listBookmarkProducerModule.Executor(authentication).execute()
     }
 
     @PutMapping(RequestMappingValues.UPDATE_BOOKMARK)

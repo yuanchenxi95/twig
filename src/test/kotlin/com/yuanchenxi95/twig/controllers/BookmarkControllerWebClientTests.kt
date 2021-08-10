@@ -5,16 +5,16 @@ import com.yuanchenxi95.protobuf.protobuf.api.TwigApiError
 import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
 import com.yuanchenxi95.twig.constants.RequestMappingValues
-import com.yuanchenxi95.twig.data.API_BOOKMARK_1
-import com.yuanchenxi95.twig.data.API_BOOKMARK_2
-import com.yuanchenxi95.twig.data.STORED_SESSION_1
+import com.yuanchenxi95.twig.data.*
 import com.yuanchenxi95.twig.framework.codecs.convertProtobufToJson
 import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.protobuf.api.Bookmark
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkResponse
+import com.yuanchenxi95.twig.protobuf.api.ListBookmarkResponse
 import com.yuanchenxi95.twig.repositories.BookmarkRepository
 import com.yuanchenxi95.twig.utils.getResponse
+import com.yuanchenxi95.twig.utils.reactorutils.parallelExecuteWithLimit
 import com.yuanchenxi95.twig.utils.setUpTestData
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -135,6 +135,50 @@ class BookmarkControllerWebClientTests : AbstractTestBase() {
         StepVerifier.create(bookmarkRepository.findAll().collectList())
             .consumeNextWith {
                 assertThat(it.size).isEqualTo(1)
+            }
+            .verifyComplete()
+    }
+
+    @Test
+    fun `list bookmark with bookmark 1 success`() {
+        parallelExecuteWithLimit(
+            listOf(
+                template.insert(STORED_URL_1)
+            )
+        ).then(
+            parallelExecuteWithLimit(
+                listOf(
+                    template.insert(STORED_BOOKMARK_1),
+                    template.insert(STORED_TAG_1)
+                )
+            ).then(
+                parallelExecuteWithLimit(
+                    listOf(
+                        template.insert(STORED_TAGS_BOOKMARKS_1),
+                    )
+                ).then()
+            )
+        ).block()
+
+        val responseSpec = client.get()
+            .uri(RequestMappingValues.LIST_BOOKMARK)
+            .cookies {
+                it.add(AUTHORIZATION, STORED_SESSION_1.id)
+            }
+            .exchange()
+            .expectStatus()
+            .isOk
+
+        StepVerifier.create(getResponse(responseSpec, ListBookmarkResponse.getDefaultInstance()))
+            .consumeNextWith {
+                ProtoTruth.assertThat(it.bookmarksList)
+                    .isEqualTo(
+                        listOf(
+                            API_BOOKMARK_1.toBuilder().addTags(
+                                STORED_TAG_1.tagName
+                            ).build()
+                        )
+                    )
             }
             .verifyComplete()
     }
