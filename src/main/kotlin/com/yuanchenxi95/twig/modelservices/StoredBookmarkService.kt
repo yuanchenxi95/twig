@@ -22,6 +22,13 @@ class StoredBookmarkService {
         )
     }
 
+    fun queryBookmarksForUser(userId: String): Mono<List<StoredBookmark>> {
+        return r2dbcEntityTemplate.select(
+            Query.query(getUserCriteria(userId)),
+            StoredBookmark::class.java
+        ).collectList()
+    }
+
     fun getUserCriteria(userId: String): Criteria {
         return Criteria.where(StoredBookmark::userId.name).`is`(userId)
     }

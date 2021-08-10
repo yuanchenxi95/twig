@@ -3,6 +3,7 @@ package com.yuanchenxi95.twig.modelservices
 import com.yuanchenxi95.twig.framework.utils.UuidUtils
 import com.yuanchenxi95.twig.models.StoredTagsBookmarks
 import com.yuanchenxi95.twig.utils.databaseutils.deleteList
+import com.yuanchenxi95.twig.utils.databaseutils.selectList
 import com.yuanchenxi95.twig.utils.reactorutils.parallelExecuteWithLimitOrderedArray
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
@@ -33,6 +34,15 @@ class StoredTagsBookmarksService {
         }
 
         return parallelExecuteWithLimitOrderedArray(createTagsBookmarksMono)
+    }
+
+    fun queryTagsBookmarksForBookmarks(
+        bookmarkIds: Iterable<String>
+    ): Mono<List<StoredTagsBookmarks>> {
+        val bookmarkIdsCriteria =
+            bookmarkIds.map { Criteria.where(StoredTagsBookmarks::bookmarkId.name).`is`(it) }
+
+        return selectList(Criteria.empty(), bookmarkIdsCriteria, r2dbcEntityTemplate)
     }
 
     fun batchDeleteReferences(bookmarkId: String, tagIds: Iterable<String>): Mono<Int> {

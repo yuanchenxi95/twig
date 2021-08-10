@@ -22,9 +22,6 @@ message CreateBookmarkResponse {
     Bookmark bookmark = 1;
 }
 
-message ListBookmarkRequest {
-}
-
 message ListBookmarkResponse {
     repeated Bookmark bookmarks = 1;
 }
