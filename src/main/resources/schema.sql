@@ -35,12 +35,13 @@ create table if not exists user
 
 create table if not exists bookmark
 (
-    id          varchar(36)                         not null
+    id           varchar(36)                         not null
         primary key,
-    url_id      varchar(36)                         not null,
-    user_id     varchar(36)                         not null,
-    create_time timestamp default CURRENT_TIMESTAMP not null,
-    update_time timestamp default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP,
+    display_name varchar(1024)                       not null,
+    url_id       varchar(36)                         not null,
+    user_id      varchar(36)                         not null,
+    create_time  timestamp default CURRENT_TIMESTAMP not null,
+    update_time  timestamp default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP,
     constraint bookmark_url_id_fk
         foreign key (url_id) references url (id),
     constraint bookmark_user_id_fk

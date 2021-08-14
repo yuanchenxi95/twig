@@ -1,11 +1,10 @@
 package com.yuanchenxi95.twig.producermodules.bookmarks
 
-import com.google.protobuf.util.FieldMaskUtil
 import com.yuanchenxi95.twig.constants.ErrorMessageUtils
 import com.yuanchenxi95.twig.constants.ResourceType
+import com.yuanchenxi95.twig.converters.BookmarkConverter
 import com.yuanchenxi95.twig.exceptions.ResourceNotFoundException
 import com.yuanchenxi95.twig.framework.securities.TwigAuthenticationToken
-import com.yuanchenxi95.twig.models.StoredTag
 import com.yuanchenxi95.twig.modelservices.StoredBookmarkService
 import com.yuanchenxi95.twig.modelservices.StoredTagService
 import com.yuanchenxi95.twig.modelservices.StoredTagsBookmarksService
@@ -15,6 +14,7 @@ import com.yuanchenxi95.twig.protobuf.api.Bookmark
 import com.yuanchenxi95.twig.protobuf.api.UpdateBookmarkRequest
 import com.yuanchenxi95.twig.protobuf.api.UpdateBookmarkResponse
 import com.yuanchenxi95.twig.utils.databaseutils.computeDiff
+import com.yuanchenxi95.twig.utils.protobufutils.FieldMaskTree
 import com.yuanchenxi95.twig.utils.reactorutils.parallelExecuteWithLimit
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.ReactiveTransactionManager
 import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Mono
+import reactor.util.function.convert
 
 @Component
 class UpdateBookmarkProducerModule : ProducerModule<UpdateBookmarkResponse> {
@@ -30,6 +31,9 @@ class UpdateBookmarkProducerModule : ProducerModule<UpdateBookmarkResponse> {
 
     @Autowired
     lateinit var r2dbcEntityTemplate: R2dbcEntityTemplate
+
+    @Autowired
+    lateinit var bookmarkConverter: BookmarkConverter
 
     @Autowired
     lateinit var storedTagService: StoredTagService
@@ -49,29 +53,15 @@ class UpdateBookmarkProducerModule : ProducerModule<UpdateBookmarkResponse> {
         private val authentication: TwigAuthenticationToken
     ) : ProducerModule.ProducerModuleExecutor<UpdateBookmarkResponse> {
 
-        private fun queryOrCreateTags(): Mono<List<StoredTag>> {
-            val userId = authentication.getUserId()
-            val tagsInTheRequest = request.bookmark.tagsList
-            val existingTagsMono =
-                storedTagService.queryTagsForUserByTagNames(userId, tagsInTheRequest)
-
-            return existingTagsMono.flatMap { storedTags ->
-                val tagsInTheDatabase = storedTags.map { it.tagName }
-                val (_, tagsToCreate) = computeDiff(
-                    HashSet(tagsInTheDatabase),
-                    HashSet(tagsInTheRequest)
-                )
-                storedTagService.batchCreateTags(userId, tagsToCreate)
-                    .map { createdTags -> storedTags.plus(createdTags) }
-            }
-        }
-
         private fun updateTags(): Mono<Void> {
             val userid = authentication.getUserId()
             val bookmarkId = bookmarkId
             val existingTagsForTheBookmarkMono =
                 storedTagService.queryTagsForBookmark(userid, bookmarkId)
-            val updatedTagsForTheBookmarkMono = queryOrCreateTags()
+            val updatedTagsForTheBookmarkMono = storedTagService.queryOrCreateTags(
+                userid,
+                request.bookmark.tagsList
+            )
             return Mono.zip(existingTagsForTheBookmarkMono, updatedTagsForTheBookmarkMono)
                 .flatMap { tuple ->
                     val existingTagIds = tuple.t1.map { it.id }
@@ -101,11 +91,8 @@ class UpdateBookmarkProducerModule : ProducerModule<UpdateBookmarkResponse> {
                             bookmarkId
                         )
                     )
-                }.map { tuple ->
-                    Bookmark.newBuilder().setId(tuple.t1.id)
-                        .setUrl(tuple.t2.url)
-                        .addAllTags(tuple.t3.map { it.tagName })
-                        .build()
+                }.map {
+                    bookmarkConverter.doForward(it.convert())
                 }
         }
 
@@ -113,11 +100,18 @@ class UpdateBookmarkProducerModule : ProducerModule<UpdateBookmarkResponse> {
             val updateOperations = ArrayList<Mono<Void>>()
 
             val bookmarkToBeUpdated = Bookmark.newBuilder()
-            FieldMaskUtil.merge(request.updateMask, request.bookmark, bookmarkToBeUpdated)
+            println(bookmarkToBeUpdated.tagsList == Bookmark.newBuilder().tagsList)
+            val fieldMaskTree = FieldMaskTree(request.updateMask)
+            fieldMaskTree.merge(request.bookmark, bookmarkToBeUpdated)
 
-            if (bookmarkToBeUpdated.tagsList != null) {
+            if (fieldMaskTree.isfieldMaskExist(
+                    request.bookmark, listOf(Bookmark.TAGS_FIELD_NUMBER)
+                )
+            ) {
                 updateOperations.add(updateTags())
             }
+
+            // TODO(yuanchenxi95) update tags
 
             return parallelExecuteWithLimit(updateOperations).then(
                 getBookmark().map {

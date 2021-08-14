@@ -52,7 +52,7 @@ internal class CreateBookmarkProducerModuleTest : AbstractTestBase() {
     @Test
     fun `create bookmark`() {
         val request = CreateBookmarkRequest.newBuilder()
-            .setUrl(API_BOOKMARK_1.url)
+            .setBookmark(API_BOOKMARK_1)
             .build()
         StepVerifier.create(
             createBookmarkProducerModule.Executor(

@@ -11,11 +11,12 @@ option java_outer_classname = "BookmarkProto";
 message Bookmark {
     string id = 1;
     string url = 2;
-    repeated string tags = 3;
+    string display_name = 3;
+    repeated string tags = 4;
 }
 
 message CreateBookmarkRequest {
-    string url = 1;
+    Bookmark bookmark = 1;
 }
 
 message CreateBookmarkResponse {

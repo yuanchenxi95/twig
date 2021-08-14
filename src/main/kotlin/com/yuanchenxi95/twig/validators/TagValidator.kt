@@ -3,11 +3,14 @@ package com.yuanchenxi95.twig.validators
 import com.yuanchenxi95.twig.framework.validation.validationAssert
 import com.yuanchenxi95.twig.protobuf.api.CreateTagRequest
 
-fun validateCreateTagRequest(request: CreateTagRequest) {
-    val tagName = request.name
-    validationAssert(!tagName.isNullOrBlank(), "Tag name must not be null.")
+fun validateTagName(tagName: String?) {
+    validationAssert(!tagName.isNullOrBlank(), "Tag name must not be null or blank.")
 }
 
-fun validateDeleteTagRequest(tagName: String?) {
-    validationAssert(!tagName.isNullOrBlank(), "Tag id must not be null.")
+fun validateCreateTagRequest(request: CreateTagRequest) {
+    validateTagName(request.name)
+}
+
+fun validateDeleteTagRequest(tagId: String?) {
+    validationAssert(!tagId.isNullOrBlank(), "Tag id must not be null.")
 }

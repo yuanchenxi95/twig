@@ -4,6 +4,7 @@ import com.google.common.truth.extensions.proto.ProtoTruth.assertThat
 import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.data.API_BOOKMARK_1
 import com.yuanchenxi95.twig.producermodules.bookmarks.CreateBookmarkProducerModule
+import com.yuanchenxi95.twig.protobuf.api.Bookmark
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkResponse
 import com.yuanchenxi95.twig.utils.TEST_AUTHENTICATION_TOKEN
@@ -33,7 +34,11 @@ class BookmarkControllerTests : AbstractTestBase() {
     @WithMockUser
     fun `create bookmark`() {
 
-        val request = CreateBookmarkRequest.newBuilder().setUrl(API_BOOKMARK_1.url).build()
+        val request = CreateBookmarkRequest.newBuilder()
+            .setBookmark(
+                Bookmark.newBuilder()
+                    .setUrl(API_BOOKMARK_1.url)
+            ).build()
 
         val expected = CreateBookmarkResponse.newBuilder().setBookmark(API_BOOKMARK_1).build()
 

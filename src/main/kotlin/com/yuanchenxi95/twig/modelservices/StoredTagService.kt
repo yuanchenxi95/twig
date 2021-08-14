@@ -3,6 +3,7 @@ package com.yuanchenxi95.twig.modelservices
 import com.yuanchenxi95.twig.framework.utils.UuidUtils
 import com.yuanchenxi95.twig.models.StoredTag
 import com.yuanchenxi95.twig.models.StoredTagsBookmarks
+import com.yuanchenxi95.twig.utils.databaseutils.computeDiff
 import com.yuanchenxi95.twig.utils.databaseutils.selectList
 import com.yuanchenxi95.twig.utils.reactorutils.parallelExecuteWithLimit
 import org.springframework.beans.factory.annotation.Autowired
@@ -82,6 +83,20 @@ class StoredTagService {
         )
         return parallelExecuteWithLimit(insertTagsQuery)
             .then(queryForTagsMono)
+    }
+
+    fun queryOrCreateTags(userId: String, tagsInTheRequest: List<String>): Mono<List<StoredTag>> {
+        val existingTagsMono = queryTagsForUserByTagNames(userId, tagsInTheRequest)
+
+        return existingTagsMono.flatMap { storedTags ->
+            val tagsInTheDatabase = storedTags.map { it.tagName }
+            val (_, tagsToCreate) = computeDiff(
+                HashSet(tagsInTheDatabase),
+                HashSet(tagsInTheRequest)
+            )
+            batchCreateTags(userId, tagsToCreate)
+                .map { createdTags -> storedTags.plus(createdTags) }
+        }
     }
 
     fun getUserCriteria(userId: String): Criteria {
