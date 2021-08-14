@@ -105,7 +105,7 @@ class TagControllerWebClientTests : AbstractTestBase() {
 
         StepVerifier.create(getResponse(responseSpec, TwigApiError.getDefaultInstance()))
             .assertNext {
-                assertThat(it.message).isEqualTo("Tag name must not be null.")
+                assertThat(it.message).isEqualTo("Tag name must not be null or blank.")
             }
             .verifyComplete()
 

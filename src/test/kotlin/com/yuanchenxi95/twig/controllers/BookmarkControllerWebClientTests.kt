@@ -56,7 +56,7 @@ class BookmarkControllerWebClientTests : AbstractTestBase() {
     @Test
     fun `create bookmark with invalid url should fail`() {
         val request = CreateBookmarkRequest.newBuilder()
-            .setUrl("invalid_url")
+            .setBookmark(Bookmark.newBuilder().setUrl("invalid_url"))
             .build()
         val responseSpec = client.post()
             .uri(RequestMappingValues.CREATE_BOOKMARK)
@@ -79,7 +79,7 @@ class BookmarkControllerWebClientTests : AbstractTestBase() {
     @Test
     fun `create bookmark with bookmark 1 should success`() {
         val request = CreateBookmarkRequest.newBuilder()
-            .setUrl(API_BOOKMARK_1.url)
+            .setBookmark(API_BOOKMARK_1.toBuilder().clearId())
             .build()
         val responseSpec = client.post()
             .uri(RequestMappingValues.CREATE_BOOKMARK)
@@ -111,7 +111,9 @@ class BookmarkControllerWebClientTests : AbstractTestBase() {
     fun `create bookmark with bookmark 2 should success`() {
 
         val request = CreateBookmarkRequest.newBuilder()
-            .setUrl(API_BOOKMARK_2.url)
+            .setBookmark(
+                API_BOOKMARK_2.toBuilder().clearId()
+            )
             .build()
         val responseSpec = client.post()
             .uri(RequestMappingValues.CREATE_BOOKMARK)

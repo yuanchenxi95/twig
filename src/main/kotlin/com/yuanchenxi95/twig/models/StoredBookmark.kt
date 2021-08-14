@@ -7,6 +7,7 @@ import java.time.Instant
 @Table("bookmark")
 data class StoredBookmark(
     @Id val id: String,
+    val displayName: String,
     val urlId: String,
     val userId: String,
     val createTime: Instant? = null,

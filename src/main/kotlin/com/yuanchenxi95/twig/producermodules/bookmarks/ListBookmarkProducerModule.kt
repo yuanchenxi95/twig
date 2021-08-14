@@ -1,9 +1,12 @@
 package com.yuanchenxi95.twig.producermodules.bookmarks
 
+import com.yuanchenxi95.twig.converters.BookmarkConverter
 import com.yuanchenxi95.twig.framework.securities.TwigAuthenticationToken
 import com.yuanchenxi95.twig.framework.utils.UuidUtils
 import com.yuanchenxi95.twig.models.StoredBookmark
+import com.yuanchenxi95.twig.models.StoredTag
 import com.yuanchenxi95.twig.models.StoredTagsBookmarks
+import com.yuanchenxi95.twig.models.StoredUrl
 import com.yuanchenxi95.twig.modelservices.StoredBookmarkService
 import com.yuanchenxi95.twig.modelservices.StoredTagService
 import com.yuanchenxi95.twig.modelservices.StoredTagsBookmarksService
@@ -17,6 +20,9 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.ReactiveTransactionManager
 import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.util.function.component1
+import reactor.kotlin.core.util.function.component2
+import reactor.kotlin.core.util.function.component3
 
 @Component
 class ListBookmarkProducerModule : ProducerModule<ListBookmarkResponse> {
@@ -25,6 +31,9 @@ class ListBookmarkProducerModule : ProducerModule<ListBookmarkResponse> {
 
     @Autowired
     lateinit var r2dbcEntityTemplate: R2dbcEntityTemplate
+
+    @Autowired
+    lateinit var bookmarkConverter: BookmarkConverter
 
     @Autowired
     lateinit var bookmarkRepository: BookmarkRepository
@@ -52,7 +61,7 @@ class ListBookmarkProducerModule : ProducerModule<ListBookmarkResponse> {
             return bookmarkService.queryBookmarksForUser(authentication.getUserId())
         }
 
-        private fun getTagsMap(tagsBookmarks: Mono<List<StoredTagsBookmarks>>): Mono<Map<String, String>> {
+        private fun getTagsMapById(tagsBookmarks: Mono<List<StoredTagsBookmarks>>): Mono<Map<String, StoredTag>> {
             return tagsBookmarks.map { storedTagsBookmarks ->
                 HashSet(
                     storedTagsBookmarks.map {
@@ -62,9 +71,7 @@ class ListBookmarkProducerModule : ProducerModule<ListBookmarkResponse> {
             }.flatMap { tagIds ->
                 tagService.queryTagsForUserByTagIds(authentication.getUserId(), tagIds)
             }.map { storedTagList ->
-                storedTagList.associate {
-                    it.id to it.tagName
-                }
+                storedTagList.associateBy(StoredTag::id)
             }
         }
 
@@ -72,26 +79,29 @@ class ListBookmarkProducerModule : ProducerModule<ListBookmarkResponse> {
             return listStoredBookmark().flatMap { storedBookmark ->
 
                 val bookmarkIds = storedBookmark.map { it.id }
-                val tagsBookmarks = tagsBookmarksService.queryTagsBookmarksForBookmarks(bookmarkIds)
-                val tagsMap = getTagsMap(tagsBookmarks)
+                val tagsBookmarksMono =
+                    tagsBookmarksService.queryTagsBookmarksForBookmarks(bookmarkIds)
+                val tagsMapByIdMono = getTagsMapById(tagsBookmarksMono)
 
                 val urlIds = storedBookmark.map { it.urlId }
-                val urlsMap = urlService.selectUrlsByIds(urlIds).map {
-                    it.associate { storedUrl ->
-                        storedUrl.id to storedUrl.url
-                    }
+                val urlsMapByIdMono = urlService.selectUrlsByIds(urlIds).map {
+                    it.associateBy(StoredUrl::id)
                 }
 
-                Mono.zip(tagsBookmarks, tagsMap, urlsMap)
+                Mono.zip(tagsBookmarksMono, tagsMapByIdMono, urlsMapByIdMono)
                     .map { tuple ->
-                        val tagsBookmarksMap = tuple.t1.groupBy({ it.bookmarkId }, { tuple.t2[it.tagId] })
+                        val (tagsBookmarks, tagsMapById, urlsMapById) = tuple
+                        val tagsByBookmarkId = tagsBookmarks
+                            .groupBy({ it.bookmarkId }, { tagsMapById[it.tagId]!! })
 
                         storedBookmark.map { bookmark ->
-                            Bookmark.newBuilder()
-                                .setId(bookmark.id)
-                                .setUrl(tuple.t3[bookmark.urlId])
-                                .addAllTags(tagsBookmarksMap.getOrDefault(bookmark.id, listOf()))
-                                .build()
+                            bookmarkConverter.doForward(
+                                Triple(
+                                    bookmark,
+                                    urlsMapById[bookmark.urlId]!!,
+                                    tagsByBookmarkId[bookmark.id] ?: listOf()
+                                )
+                            )
                         }
                     }
             }

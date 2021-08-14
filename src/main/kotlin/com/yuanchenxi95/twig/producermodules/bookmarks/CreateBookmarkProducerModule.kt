@@ -1,11 +1,14 @@
 package com.yuanchenxi95.twig.producermodules.bookmarks
 
+import com.yuanchenxi95.twig.converters.BookmarkConverter
 import com.yuanchenxi95.twig.framework.securities.TwigAuthenticationToken
 import com.yuanchenxi95.twig.framework.utils.UuidUtils
 import com.yuanchenxi95.twig.models.StoredBookmark
+import com.yuanchenxi95.twig.models.StoredTag
 import com.yuanchenxi95.twig.models.StoredUrl
+import com.yuanchenxi95.twig.modelservices.StoredTagService
+import com.yuanchenxi95.twig.modelservices.StoredTagsBookmarksService
 import com.yuanchenxi95.twig.producermodules.ProducerModule
-import com.yuanchenxi95.twig.protobuf.api.Bookmark
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkResponse
 import com.yuanchenxi95.twig.repositories.BookmarkRepository
@@ -19,6 +22,8 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.ReactiveTransactionManager
 import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Mono
+import reactor.util.function.Tuple3
+import reactor.util.function.convert
 import java.net.URL
 
 @Component
@@ -34,6 +39,15 @@ class CreateBookmarkProducerModule : ProducerModule<CreateBookmarkResponse> {
 
     @Autowired
     lateinit var bookmarkRepository: BookmarkRepository
+
+    @Autowired
+    lateinit var bookmarkConverter: BookmarkConverter
+
+    @Autowired
+    lateinit var storedTagService: StoredTagService
+
+    @Autowired
+    lateinit var storedTagsBookmarkService: StoredTagsBookmarksService
 
     @Autowired
     lateinit var urlStreamProducer: UrlStreamProducer
@@ -63,8 +77,20 @@ class CreateBookmarkProducerModule : ProducerModule<CreateBookmarkResponse> {
             }
         }
 
-        private fun createBookmark(): Mono<StoredBookmark> {
-            val url = request.url
+        private fun createTagsAndLinkTagsForBookmark(bookmarkId: String): Mono<List<StoredTag>> {
+            return storedTagService.queryOrCreateTags(
+                authentication.getUserId(),
+                request.bookmark.tagsList
+            ).flatMap { storedTags ->
+                storedTagsBookmarkService.batchCreateReferences(
+                    bookmarkId,
+                    storedTags.map { it.id }
+                ).then(Mono.just(storedTags))
+            }
+        }
+
+        private fun createBookmark(): Mono<Tuple3<StoredBookmark, StoredUrl, List<StoredTag>>> {
+            val url = request.bookmark.url
             val storedUrlMono = r2dbcEntityTemplate.selectOne(
                 Query.query(Criteria.where(StoredUrl::url.name).`is`(url)),
                 StoredUrl::class.java
@@ -75,17 +101,21 @@ class CreateBookmarkProducerModule : ProducerModule<CreateBookmarkResponse> {
                 .flatMap {
                     val storedBookmark = StoredBookmark(
                         id = nextId,
+                        displayName = request.bookmark.displayName,
                         urlId = it.id,
-                        // TODO(yuanchenxi), uses the user Id from request context.
                         userId = authentication.getUserId()
                     )
-                    r2dbcEntityTemplate.insert(storedBookmark)
-                }.flatMap {
-                    bookmarkRepository.findById(nextId)
+
+                    Mono.zip(
+                        r2dbcEntityTemplate.insert(storedBookmark)
+                            .then(bookmarkRepository.findById(nextId)),
+                        Mono.just(it),
+                        createTagsAndLinkTagsForBookmark(it.id)
+                    )
                 }
         }
 
-        private fun transactionRunner(): Mono<StoredBookmark> {
+        private fun transactionRunner(): Mono<Tuple3<StoredBookmark, StoredUrl, List<StoredTag>>> {
             val operator = TransactionalOperator.create(reactiveTransactionManager)
             return createBookmark().`as`(operator::transactional)
         }
@@ -94,9 +124,9 @@ class CreateBookmarkProducerModule : ProducerModule<CreateBookmarkResponse> {
             return transactionRunner().map {
                 CreateBookmarkResponse.newBuilder()
                     .setBookmark(
-                        Bookmark.newBuilder().setId(it.id)
-                            .setUrl(request.url)
-                            .build()
+                        bookmarkConverter.doForward(
+                            it.convert()
+                        )
                     )
                     .build()
             }

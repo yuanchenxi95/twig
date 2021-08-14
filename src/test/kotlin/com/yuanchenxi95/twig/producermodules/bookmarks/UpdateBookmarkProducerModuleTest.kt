@@ -125,6 +125,54 @@ internal class UpdateBookmarkProducerModuleTest : AbstractTestBase() {
     }
 
     @Test
+    fun `update bookmark to remove all the tags should work`() {
+        val tagsBookmarksId = uuidUtils.generateUUID()
+        template.insert(
+            StoredTagsBookmarks(
+                id = tagsBookmarksId,
+                bookmarkId = STORED_BOOKMARK_1.id,
+                tagId = STORED_TAG_1.id
+            )
+        ).block()
+
+        val updateBookmarkRequest = UpdateBookmarkRequest.newBuilder()
+            .setBookmark(
+                Bookmark.newBuilder()
+                    .setId(STORED_BOOKMARK_1.id)
+            )
+            .setUpdateMask(
+                FieldMaskUtil.fromFieldNumbers(
+                    Bookmark::class.java, Bookmark.TAGS_FIELD_NUMBER
+                )
+            )
+            .build()
+
+        val updateBookmarkExecutor = updateBookmarkProducerModule.Executor(
+            updateBookmarkRequest,
+            STORED_BOOKMARK_1.id, TEST_AUTHENTICATION_TOKEN
+        )
+
+        StepVerifier.create(updateBookmarkExecutor.execute())
+            .consumeNextWith {
+                assertThat(it.bookmark)
+                    .ignoringRepeatedFieldOrder()
+                    .isEqualTo(
+                        API_BOOKMARK_1
+                    )
+            }.verifyComplete()
+
+        // Verifies the tags are created in the database
+        StepVerifier.create(
+            storedTagService.queryTagsForBookmark(
+                userId = STORED_USER_1.id,
+                bookmarkId = STORED_BOOKMARK_1.id,
+            )
+        ).consumeNextWith { tagsOfBookmark1 ->
+            assertThat(tagsOfBookmark1).isEmpty()
+        }
+    }
+
+    @Test
     fun `updateBookmark user does not match failed`() {
         val updateBookmarkRequest = UpdateBookmarkRequest.newBuilder()
             .setBookmark(
