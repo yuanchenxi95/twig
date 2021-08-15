@@ -1,7 +1,7 @@
 import { Layout } from 'antd';
 import { Content } from 'antd/es/layout/layout';
 import React from 'react';
-import { AppRoutes } from '../app_routes/app_routes_';
+import { AppRoutes } from '../../routes/app_routes';
 import { AppSider } from '../app_sider/app_sider';
 import './app_layout.less';
 

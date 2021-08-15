@@ -2,6 +2,7 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { LoadingState } from '../common/loading_state';
+import { BlockingLoadingSpinner } from '../components/loading_spinner/blocking_loading_spinner';
 import { AppLayout } from '../containers/app_layout/app_layout';
 import { LoginPage } from '../containers/login_page/login_page';
 import { authenticationGetAsyncAction } from '../store/authentications/authentication_actions';
@@ -47,7 +48,7 @@ export function RootRoute() {
         authenticationLoadingState === LoadingState.LOADING ||
         authenticationLoadingState === LoadingState.IDLE
     ) {
-        return <h1>Loading</h1>;
+        return <BlockingLoadingSpinner loading={true} />;
     }
 
     return (

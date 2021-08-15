@@ -109,8 +109,13 @@ class CreateBookmarkProducerModule : ProducerModule<CreateBookmarkResponse> {
                     Mono.zip(
                         r2dbcEntityTemplate.insert(storedBookmark)
                             .then(bookmarkRepository.findById(nextId)),
-                        Mono.just(it),
-                        createTagsAndLinkTagsForBookmark(it.id)
+                        Mono.just(it)
+                    )
+                }.flatMap {
+                    Mono.zip(
+                        Mono.just(it.t1),
+                        Mono.just(it.t2),
+                        createTagsAndLinkTagsForBookmark(it.t1.id)
                     )
                 }
         }
