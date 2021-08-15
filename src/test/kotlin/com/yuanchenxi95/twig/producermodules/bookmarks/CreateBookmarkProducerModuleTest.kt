@@ -5,9 +5,12 @@ import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
 import com.yuanchenxi95.twig.data.API_BOOKMARK_1
 import com.yuanchenxi95.twig.data.STORED_URL_1
+import com.yuanchenxi95.twig.data.STORED_USER_1
 import com.yuanchenxi95.twig.framework.utils.UuidUtils
 import com.yuanchenxi95.twig.models.StoredSession
+import com.yuanchenxi95.twig.models.StoredTag
 import com.yuanchenxi95.twig.models.StoredUrl
+import com.yuanchenxi95.twig.modelservices.StoredTagService
 import com.yuanchenxi95.twig.protobuf.api.Bookmark
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
 import com.yuanchenxi95.twig.repositories.UrlRepository
@@ -37,6 +40,9 @@ internal class CreateBookmarkProducerModuleTest : AbstractTestBase() {
 
     @Autowired
     private lateinit var urlRepository: UrlRepository
+
+    @Autowired
+    private lateinit var storedTagService: StoredTagService
 
     @Autowired
     private lateinit var template: R2dbcEntityTemplate
@@ -78,5 +84,43 @@ internal class CreateBookmarkProducerModuleTest : AbstractTestBase() {
                     ).isEqualTo(STORED_URL_1)
             }
             .verifyComplete()
+    }
+
+    @Test
+    fun `create bookmark with tags should success`() {
+        val tags = listOf("foo", "bar")
+        val bookmarkWithTags = API_BOOKMARK_1
+            .toBuilder().clearId()
+            .addAllTags(tags).build()
+        val request = CreateBookmarkRequest.newBuilder()
+            .setBookmark(bookmarkWithTags)
+            .build()
+
+        val createdBookmark = createBookmarkProducerModule.Executor(
+            request,
+            TEST_AUTHENTICATION_TOKEN
+        ).execute().block()!!.bookmark
+
+        ProtoTruth.assertThat(createdBookmark)
+            .ignoringFields(Bookmark.ID_FIELD_NUMBER)
+            .ignoringRepeatedFieldOrder()
+            .isEqualTo(bookmarkWithTags)
+
+        StepVerifier.create(urlRepository.findAll().collectList())
+            .consumeNextWith {
+                assertThat(it.size).isEqualTo(1)
+                assertThat(it[0])
+                    .usingRecursiveComparison().ignoringFields(
+                        StoredUrl::id.name,
+                        StoredUrl::createTime.name,
+                        StoredUrl::updateTime.name,
+                    ).isEqualTo(STORED_URL_1)
+            }
+            .verifyComplete()
+        StepVerifier.create(storedTagService.queryTagsForBookmark(STORED_USER_1.id, createdBookmark.id))
+            .consumeNextWith {
+                assertThat(it.size).isEqualTo(2)
+                assertThat(it.map(StoredTag::tagName)).containsExactlyInAnyOrder(*tags.toTypedArray())
+            }
     }
 }

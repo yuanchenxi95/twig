@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import {
     MENU_OPTION_ITEMS,
-    MenuOption,
+    MENU_OPTIONS,
 } from '../../store/layout/menus/menu_constants';
 import { selectSelectedLayoutMenuOption } from '../../store/layout/menus/menu_selectors';
 
@@ -21,7 +21,7 @@ export function AppSider() {
                 mode="vertical"
                 selectedKeys={[selectedLayoutMenuOption]}
             >
-                {Object.values(MenuOption).map((headerOption) => (
+                {MENU_OPTIONS.map((headerOption) => (
                     <Menu.Item key={headerOption}>
                         <Link
                             to={(location) => ({
