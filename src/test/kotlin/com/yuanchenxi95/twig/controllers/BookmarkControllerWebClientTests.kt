@@ -181,6 +181,82 @@ class BookmarkControllerWebClientTests : AbstractTestBase() {
                             ).build()
                         )
                     )
+                assertThat(it.nextPageToken).isEmpty()
+            }
+            .verifyComplete()
+    }
+
+    @Test
+    fun `list bookmarks using pageToken success`() {
+        parallelExecuteWithLimit(
+            listOf(
+                template.insert(STORED_URL_1),
+                template.insert(STORED_URL_2)
+            )
+        ).then(
+            parallelExecuteWithLimit(
+                listOf(
+                    template.insert(STORED_BOOKMARK_1),
+                    template.insert(STORED_BOOKMARK_4),
+                    template.insert(STORED_TAG_1)
+                )
+            ).then(
+                parallelExecuteWithLimit(
+                    listOf(
+                        template.insert(STORED_TAGS_BOOKMARKS_1),
+                        template.insert(STORED_TAGS_BOOKMARKS_2),
+                    )
+                ).then()
+            )
+        ).block()
+
+        val responseSpec = client.get()
+            .uri { uriBuilder ->
+                uriBuilder.path(RequestMappingValues.LIST_BOOKMARK)
+                    .queryParam("page_size", "1").build()
+            }
+            .cookies {
+                it.add(AUTHORIZATION, STORED_SESSION_1.id)
+            }
+            .exchange()
+            .expectStatus()
+            .isOk
+
+        StepVerifier.create(
+            getResponse(
+                responseSpec,
+                ListBookmarkResponse.getDefaultInstance()
+            )
+                .flatMap {
+                    val responseSpec2 = client.get()
+                        .uri { uriBuilder ->
+                            uriBuilder.path(RequestMappingValues.LIST_BOOKMARK)
+                                .queryParam("page_size", "5")
+                                .queryParam("page_token", it.nextPageToken).build()
+                        }
+                        .cookies {
+                            it.add(AUTHORIZATION, STORED_SESSION_1.id)
+                        }
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+
+                    getResponse(
+                        responseSpec2,
+                        ListBookmarkResponse.getDefaultInstance()
+                    )
+                }
+        )
+            .consumeNextWith {
+                ProtoTruth.assertThat(it.bookmarksList)
+                    .isEqualTo(
+                        listOf(
+                            API_BOOKMARK_3.toBuilder().addTags(
+                                STORED_TAG_1.tagName
+                            ).build()
+                        )
+                    )
+                assertThat(it.nextPageToken).isEmpty()
             }
             .verifyComplete()
     }

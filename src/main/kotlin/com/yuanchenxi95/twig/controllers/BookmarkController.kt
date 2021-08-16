@@ -7,13 +7,19 @@ import com.yuanchenxi95.twig.producermodules.bookmarks.ListBookmarkProducerModul
 import com.yuanchenxi95.twig.producermodules.bookmarks.UpdateBookmarkProducerModule
 import com.yuanchenxi95.twig.protobuf.api.*
 import com.yuanchenxi95.twig.validators.validateCreateBookmarkRequest
+import com.yuanchenxi95.twig.validators.validateListBookmarkRequest
 import com.yuanchenxi95.twig.validators.validateUpdateBookmarkRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
+import kotlin.math.min
 
 @RestController
 class BookmarkController {
+    companion object {
+        const val LIST_BOOKMARK_MAX_PAGE_SIZE = 1000
+    }
+
     @Autowired
     private lateinit var createBookmarkProducerModule: CreateBookmarkProducerModule
 
@@ -34,9 +40,12 @@ class BookmarkController {
 
     @GetMapping(RequestMappingValues.LIST_BOOKMARK)
     fun listBookmarks(
+        @RequestParam(value = "page_size", required = false, defaultValue = "50") pageSize: Int,
+        @RequestParam(value = "page_token", required = false, defaultValue = "") pageToken: String,
         authentication: TwigAuthenticationToken
     ): Mono<ListBookmarkResponse> {
-        return listBookmarkProducerModule.Executor(authentication).execute()
+        validateListBookmarkRequest(pageSize, pageToken)
+        return listBookmarkProducerModule.Executor(min(pageSize, LIST_BOOKMARK_MAX_PAGE_SIZE), pageToken, authentication).execute()
     }
 
     @PutMapping(RequestMappingValues.UPDATE_BOOKMARK)

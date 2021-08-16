@@ -6,6 +6,7 @@ import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
 import com.yuanchenxi95.twig.data.*
 import com.yuanchenxi95.twig.framework.utils.UuidUtils
+import com.yuanchenxi95.twig.models.StoredBookmark
 import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.protobuf.api.ListBookmarkResponse
 import com.yuanchenxi95.twig.utils.TEST_AUTHENTICATION_TOKEN
@@ -21,6 +22,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import reactor.test.StepVerifier
+import java.time.Instant
 
 @WebFluxTest(
     excludeAutoConfiguration = [ReactiveUserDetailsServiceAutoConfiguration::class, ReactiveSecurityAutoConfiguration::class]
@@ -62,14 +64,17 @@ class ListBookmarkProducerModuleTest : AbstractTestBase() {
 
         StepVerifier.create(
             listBookmarkProducerModule.Executor(
+                10,
+                "",
                 TEST_AUTHENTICATION_TOKEN
             ).execute()
         )
             .consumeNextWith {
                 assertThat(it).isEqualTo(
-                    ListBookmarkResponse.newBuilder().addBookmarks(
-                        API_BOOKMARK_1
-                    ).addBookmarks(API_BOOKMARK_3).build()
+                    ListBookmarkResponse.newBuilder()
+                        .addBookmarks(API_BOOKMARK_1)
+                        .addBookmarks(API_BOOKMARK_3)
+                        .setNextPageToken("").build()
                 )
             }
             .verifyComplete()
@@ -103,6 +108,8 @@ class ListBookmarkProducerModuleTest : AbstractTestBase() {
 
         StepVerifier.create(
             listBookmarkProducerModule.Executor(
+                10,
+                "",
                 TEST_AUTHENTICATION_TOKEN
             ).execute()
         )
@@ -118,7 +125,7 @@ class ListBookmarkProducerModuleTest : AbstractTestBase() {
                                 .addTags(STORED_TAG_2.tagName)
                                 .addTags(STORED_TAG_1.tagName)
                                 .build()
-                        ).build()
+                        ).setNextPageToken("").build()
                 )
             }
             .verifyComplete()
@@ -126,11 +133,81 @@ class ListBookmarkProducerModuleTest : AbstractTestBase() {
 
     @Test
     fun `list no bookmark success`() {
-        StepVerifier.create(listBookmarkProducerModule.Executor(TEST_AUTHENTICATION_TOKEN).execute())
+        StepVerifier.create(listBookmarkProducerModule.Executor(10, "", TEST_AUTHENTICATION_TOKEN).execute())
             .assertNext {
                 assertThat(it).isEqualTo(
                     ListBookmarkResponse.getDefaultInstance()
                 )
             }.verifyComplete()
+    }
+
+    @Test
+    fun `list one bookmark without tags success`() {
+        val instant = Instant.now()
+        parallelExecuteWithLimit(
+            listOf(
+                template.insert(STORED_URL_1),
+                template.insert(STORED_URL_2),
+            )
+        ).then(
+            parallelExecuteWithLimit(
+                listOf(
+                    template.insert(StoredBookmark(id = "1", urlId = STORED_URL_1.id, displayName = "display name 1", userId = STORED_USER_1.id, createTime = instant)),
+                    template.insert(StoredBookmark(id = "4", urlId = STORED_URL_2.id, displayName = "display name 1", userId = STORED_USER_1.id, createTime = instant)),
+                )
+            ).then()
+        ).block()
+
+        StepVerifier.create(
+            listBookmarkProducerModule.Executor(
+                1,
+                "",
+                TEST_AUTHENTICATION_TOKEN
+            ).execute()
+        )
+            .consumeNextWith {
+                assertThat(it.bookmarksList.size).isEqualTo(1)
+                assertThat(it.bookmarksList[0]).isEqualTo(API_BOOKMARK_1)
+                assertThat(it.nextPageToken).isNotEmpty()
+            }
+            .verifyComplete()
+    }
+
+    @Test
+    fun `list one bookmark without tags using pageToken success`() {
+        val instant = Instant.now()
+        parallelExecuteWithLimit(
+            listOf(
+                template.insert(STORED_URL_1),
+                template.insert(STORED_URL_2),
+            )
+        ).then(
+            parallelExecuteWithLimit(
+                listOf(
+                    template.insert(StoredBookmark(id = "1", urlId = STORED_URL_1.id, displayName = "display name 1", userId = STORED_USER_1.id, createTime = instant)),
+                    template.insert(StoredBookmark(id = "4", urlId = STORED_URL_2.id, displayName = "display name 1", userId = STORED_USER_1.id, createTime = instant)),
+                )
+            ).then()
+        ).block()
+
+        StepVerifier.create(
+            listBookmarkProducerModule.Executor(
+                1,
+                "",
+                TEST_AUTHENTICATION_TOKEN
+            ).execute().flatMap {
+                listBookmarkProducerModule.Executor(
+                    1,
+                    it.nextPageToken,
+                    TEST_AUTHENTICATION_TOKEN
+                ).execute()
+            }
+        )
+            .consumeNextWith {
+                assertThat(it.bookmarksList.size).isEqualTo(1)
+                assertThat(it.bookmarksList[0]).isEqualTo(API_BOOKMARK_3)
+                assertThat(it.nextPageToken).isEmpty()
+            }
+            .verifyComplete()
     }
 }
