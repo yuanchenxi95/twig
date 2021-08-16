@@ -100,7 +100,6 @@ class UpdateBookmarkProducerModule : ProducerModule<UpdateBookmarkResponse> {
             val updateOperations = ArrayList<Mono<Void>>()
 
             val bookmarkToBeUpdated = Bookmark.newBuilder()
-            println(bookmarkToBeUpdated.tagsList == Bookmark.newBuilder().tagsList)
             val fieldMaskTree = FieldMaskTree(request.updateMask)
             fieldMaskTree.merge(request.bookmark, bookmarkToBeUpdated)
 

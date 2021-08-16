@@ -14,6 +14,8 @@ import com.yuanchenxi95.twig.modelservices.StoredUrlService
 import com.yuanchenxi95.twig.producermodules.ProducerModule
 import com.yuanchenxi95.twig.protobuf.api.*
 import com.yuanchenxi95.twig.repositories.BookmarkRepository
+import com.yuanchenxi95.twig.utils.datautils.decodeBookmarkPageToken
+import com.yuanchenxi95.twig.utils.datautils.encodeBookmarkPageToken
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.stereotype.Component
@@ -54,11 +56,18 @@ class ListBookmarkProducerModule : ProducerModule<ListBookmarkResponse> {
     lateinit var uuidUtils: UuidUtils
 
     inner class Executor(
+        private val pageSize: Int,
+        private val pageToken: String,
         private val authentication: TwigAuthenticationToken
     ) : ProducerModule.ProducerModuleExecutor<ListBookmarkResponse> {
 
         private fun listStoredBookmark(): Mono<List<StoredBookmark>> {
-            return bookmarkService.queryBookmarksForUser(authentication.getUserId())
+            if (pageToken.isNullOrEmpty()) {
+                return bookmarkService.queryBookmarksForUserOrderByCreateTime(authentication.getUserId(), pageSize + 1)
+            }
+
+            val (lastCreateTime, lastId) = decodeBookmarkPageToken(pageToken)
+            return bookmarkService.queryBookmarksForUserByLastIdAndLastCreateTime(authentication.getUserId(), pageSize + 1, lastCreateTime, lastId)
         }
 
         private fun getTagsMapById(tagsBookmarks: Mono<List<StoredTagsBookmarks>>): Mono<Map<String, StoredTag>> {
@@ -75,8 +84,19 @@ class ListBookmarkProducerModule : ProducerModule<ListBookmarkResponse> {
             }
         }
 
-        private fun listBookmarkWithTag(): Mono<List<Bookmark>> {
-            return listStoredBookmark().flatMap { storedBookmark ->
+        private fun listBookmarkWithTag(): Mono<Pair<List<Bookmark>, String>> {
+            return listStoredBookmark().flatMap { bookmarks ->
+
+                if (bookmarks.isEmpty()) {
+                    return@flatMap Mono.just(Pair(listOf(), ""))
+                }
+
+                var hasNext = false
+                var storedBookmark = bookmarks
+                if (bookmarks.size > pageSize) {
+                    hasNext = true
+                    storedBookmark = storedBookmark.subList(0, pageSize)
+                }
 
                 val bookmarkIds = storedBookmark.map { it.id }
                 val tagsBookmarksMono =
@@ -94,20 +114,26 @@ class ListBookmarkProducerModule : ProducerModule<ListBookmarkResponse> {
                         val tagsByBookmarkId = tagsBookmarks
                             .groupBy({ it.bookmarkId }, { tagsMapById[it.tagId]!! })
 
-                        storedBookmark.map { bookmark ->
-                            bookmarkConverter.doForward(
-                                Triple(
-                                    bookmark,
-                                    urlsMapById[bookmark.urlId]!!,
-                                    tagsByBookmarkId[bookmark.id] ?: listOf()
+                        val lastId = bookmarkIds.last()
+                        val lastCreateTime = storedBookmark.last().createTime
+
+                        Pair(
+                            storedBookmark.map { bookmark ->
+                                bookmarkConverter.doForward(
+                                    Triple(
+                                        bookmark,
+                                        urlsMapById[bookmark.urlId]!!,
+                                        tagsByBookmarkId[bookmark.id] ?: listOf()
+                                    )
                                 )
-                            )
-                        }
+                            },
+                            if (hasNext) encodeBookmarkPageToken(lastCreateTime!!, lastId) else ""
+                        )
                     }
             }
         }
 
-        private fun transactionRunner(): Mono<List<Bookmark>> {
+        private fun transactionRunner(): Mono<Pair<List<Bookmark>, String>> {
             val operator = TransactionalOperator.create(reactiveTransactionManager)
             return listBookmarkWithTag().`as`(operator::transactional)
         }
@@ -115,7 +141,8 @@ class ListBookmarkProducerModule : ProducerModule<ListBookmarkResponse> {
         override fun execute(): Mono<ListBookmarkResponse> {
             return transactionRunner().map {
                 ListBookmarkResponse.newBuilder()
-                    .addAllBookmarks(it)
+                    .addAllBookmarks(it.first)
+                    .setNextPageToken(it.second)
                     .build()
             }
         }
