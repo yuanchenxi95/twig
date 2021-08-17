@@ -193,14 +193,11 @@ class BookmarkControllerWebClientTests : AbstractTestBase() {
                 template.insert(STORED_URL_1),
                 template.insert(STORED_URL_2)
             )
-        ).then(
-            parallelExecuteWithLimit(
-                listOf(
-                    template.insert(STORED_BOOKMARK_1),
-                    template.insert(STORED_BOOKMARK_4),
-                    template.insert(STORED_TAG_1)
-                )
-            ).then(
+        )
+            .then(template.insert(STORED_BOOKMARK_4))
+            .then(template.insert(STORED_BOOKMARK_1))
+            .then(template.insert(STORED_TAG_1))
+            .then(
                 parallelExecuteWithLimit(
                     listOf(
                         template.insert(STORED_TAGS_BOOKMARKS_1),
@@ -208,7 +205,7 @@ class BookmarkControllerWebClientTests : AbstractTestBase() {
                     )
                 ).then()
             )
-        ).block()
+            .block()
 
         val responseSpec = client.get()
             .uri { uriBuilder ->
