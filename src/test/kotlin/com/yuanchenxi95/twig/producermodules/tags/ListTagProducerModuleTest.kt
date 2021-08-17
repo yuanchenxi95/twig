@@ -51,7 +51,7 @@ class ListTagProducerModuleTest : AbstractTestBase() {
         StepVerifier.create(listTagProducerModule.Executor(TEST_AUTHENTICATION_TOKEN).execute())
             .assertNext {
                 assertThat(it).isEqualTo(
-                    ListTagResponse.newBuilder().addTags(API_TAG_1).addTags(API_TAG_2).build()
+                    ListTagResponse.newBuilder().addTags(API_TAG_2).addTags(API_TAG_1).build()
                 )
             }.verifyComplete()
     }

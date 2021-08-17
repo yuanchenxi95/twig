@@ -53,14 +53,10 @@ class ListBookmarkProducerModuleTest : AbstractTestBase() {
                 template.insert(STORED_URL_1),
                 template.insert(STORED_URL_2),
             )
-        ).then(
-            parallelExecuteWithLimit(
-                listOf(
-                    template.insert(STORED_BOOKMARK_1),
-                    template.insert(STORED_BOOKMARK_4),
-                )
-            ).then()
-        ).block()
+        )
+            .then(template.insert(STORED_BOOKMARK_4))
+            .then(template.insert(STORED_BOOKMARK_1))
+            .block()
 
         StepVerifier.create(
             listBookmarkProducerModule.Executor(
