@@ -25,6 +25,8 @@ message CreateBookmarkResponse {
 
 message ListBookmarkResponse {
     repeated Bookmark bookmarks = 1;
+
+    string next_page_token = 2;
 }
 
 message UpdateBookmarkRequest {

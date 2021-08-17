@@ -1,10 +1,13 @@
 package com.yuanchenxi95.twig.validators
 
+import com.yuanchenxi95.twig.framework.validation.ValidationError
 import com.yuanchenxi95.twig.framework.validation.validationAssert
 import com.yuanchenxi95.twig.protobuf.api.Bookmark
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
 import com.yuanchenxi95.twig.protobuf.api.UpdateBookmarkRequest
+import com.yuanchenxi95.twig.utils.datautils.decodeBookmarkPageToken
 import org.apache.commons.validator.routines.UrlValidator
+import java.util.*
 
 fun validateBookmarkDisplayName(bookmark: Bookmark) {
     validationAssert(
@@ -38,4 +41,18 @@ fun validateUpdateBookmarkRequest(request: UpdateBookmarkRequest, bookmarkId: St
     val allFields = request.updateMask.allFields
 //    validationAssert(allFields.containsKey(Bookmark.getDescriptor()))
 //    if(reqcontains(Bookmark.))
+}
+
+fun validateListBookmarkRequest(pageSize: Int, pageToken: String) {
+    validationAssert(pageSize > 0, "Page Size must be positive integer.")
+
+    if (pageToken.isNullOrEmpty()) {
+        return
+    }
+
+    try {
+        decodeBookmarkPageToken(pageToken)
+    } catch (e: Exception) {
+        throw ValidationError("Page Token format error.")
+    }
 }
