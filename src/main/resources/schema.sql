@@ -1,13 +1,13 @@
 create table if not exists url
 (
-    id          varchar(36)                         not null
+    id          varchar(36)                              not null
         primary key,
-    protocol    varchar(255)                        not null,
-    host        varchar(255)                        not null,
-    path        varchar(255)                        not null,
-    url         varchar(255)                        not null,
-    create_time timestamp default CURRENT_TIMESTAMP not null,
-    update_time timestamp default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP,
+    protocol    varchar(255)                             not null,
+    host        varchar(255)                             not null,
+    path        varchar(255)                             not null,
+    url         varchar(255)                             not null,
+    create_time datetime(6) default CURRENT_TIMESTAMP(6) not null,
+    update_time datetime(6) default CURRENT_TIMESTAMP(6) not null on update CURRENT_TIMESTAMP(6),
     constraint url_url_uindex
         unique (url)
 );
@@ -23,25 +23,25 @@ create index url_update_time_index
 
 create table if not exists user
 (
-    id          varchar(36)                         not null
+    id          varchar(36)                              not null
         primary key,
-    user_email  varchar(255)                        not null,
-    name        varchar(255)                        not null,
-    create_time timestamp default CURRENT_TIMESTAMP not null,
-    update_time timestamp default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP,
+    user_email  varchar(255)                             not null,
+    name        varchar(255)                             not null,
+    create_time datetime(6) default CURRENT_TIMESTAMP(6) not null,
+    update_time datetime(6) default CURRENT_TIMESTAMP(6) not null on update CURRENT_TIMESTAMP(6),
     constraint user_user_email_uindex
         unique (user_email)
 );
 
 create table if not exists bookmark
 (
-    id           varchar(36)                         not null
+    id           varchar(36)                              not null
         primary key,
-    display_name varchar(1024)                       not null,
-    url_id       varchar(36)                         not null,
-    user_id      varchar(36)                         not null,
-    create_time  timestamp default CURRENT_TIMESTAMP not null,
-    update_time  timestamp default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP,
+    display_name varchar(1024)                            not null,
+    url_id       varchar(36)                              not null,
+    user_id      varchar(36)                              not null,
+    create_time  datetime(6) default CURRENT_TIMESTAMP(6) not null,
+    update_time  datetime(6) default CURRENT_TIMESTAMP(6) not null on update CURRENT_TIMESTAMP(6),
     constraint bookmark_url_id_fk
         foreign key (url_id) references url (id),
     constraint bookmark_user_id_fk
@@ -56,11 +56,11 @@ create index bookmark_create_time_index
 
 create table if not exists tag
 (
-    id          varchar(36)                         not null
+    id          varchar(36)                              not null
         primary key,
-    tag_name    varchar(255)                        not null,
-    user_id     varchar(36)                         not null,
-    create_time timestamp default CURRENT_TIMESTAMP not null,
+    tag_name    varchar(255)                             not null,
+    user_id     varchar(36)                              not null,
+    create_time datetime(6) default CURRENT_TIMESTAMP(6) not null,
 
     constraint tag_tag_name_user_id_uindex
         unique (tag_name, user_id),
@@ -73,11 +73,11 @@ create index tag_create_time_index
 
 create table if not exists tags_bookmarks
 (
-    id          varchar(36)                         not null
+    id          varchar(36)                              not null
         primary key,
-    bookmark_id varchar(36)                         not null,
-    tag_id      varchar(36)                         not null,
-    create_time timestamp default CURRENT_TIMESTAMP not null,
+    bookmark_id varchar(36)                              not null,
+    tag_id      varchar(36)                              not null,
+    create_time datetime(6) default CURRENT_TIMESTAMP(6) not null,
     constraint tags_bookmarks_bookmark_id_tag_id_uindex
         unique (bookmark_id, tag_id),
     constraint tags_bookmarks_bookmark_id_fk
