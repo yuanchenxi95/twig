@@ -170,7 +170,13 @@ class StoredBookmarkServiceTest : AbstractTestBase() {
         template.insert(STORED_URL_1).block()
         var instant = Instant.now()
         for (id in 9 downTo 1) {
-            val storedBookmark = StoredBookmark(id = id.toString(), urlId = STORED_URL_1.id, displayName = "display name 1", userId = STORED_USER_1.id, createTime = instant)
+            val storedBookmark = StoredBookmark(
+                id = id.toString(),
+                urlId = STORED_URL_1.id,
+                displayName = "display name 1",
+                userId = STORED_USER_1.id,
+                createTime = instant
+            )
             template.insert(storedBookmark).block()
         }
     }
@@ -180,7 +186,13 @@ class StoredBookmarkServiceTest : AbstractTestBase() {
         var instant = Instant.now()
         for (id in 9 downTo 1) {
             instant = instant.plusMillis(2000)
-            val storedBookmark = StoredBookmark(id = id.toString(), urlId = STORED_URL_1.id, displayName = "display name 1", userId = STORED_USER_1.id, createTime = instant)
+            val storedBookmark = StoredBookmark(
+                id = id.toString(),
+                urlId = STORED_URL_1.id,
+                displayName = "display name 1",
+                userId = STORED_USER_1.id,
+                createTime = instant
+            )
             template.insert(storedBookmark).block()
         }
     }

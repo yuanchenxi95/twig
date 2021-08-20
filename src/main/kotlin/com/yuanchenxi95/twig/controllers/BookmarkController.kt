@@ -45,7 +45,11 @@ class BookmarkController {
         authentication: TwigAuthenticationToken
     ): Mono<ListBookmarkResponse> {
         validateListBookmarkRequest(pageSize, pageToken)
-        return listBookmarkProducerModule.Executor(min(pageSize, LIST_BOOKMARK_MAX_PAGE_SIZE), pageToken, authentication).execute()
+        return listBookmarkProducerModule.Executor(
+            min(pageSize, LIST_BOOKMARK_MAX_PAGE_SIZE),
+            pageToken,
+            authentication
+        ).execute()
     }
 
     @PutMapping(RequestMappingValues.UPDATE_BOOKMARK)

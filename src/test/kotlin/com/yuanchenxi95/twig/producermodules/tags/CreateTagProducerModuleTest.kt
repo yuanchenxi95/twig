@@ -5,7 +5,7 @@ import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
 import com.yuanchenxi95.twig.data.STORED_TAG_1
 import com.yuanchenxi95.twig.models.StoredSession
-import com.yuanchenxi95.twig.protobuf.api.CreateTagRequest
+import com.yuanchenxi95.twig.protobuf.api.createTagRequest
 import com.yuanchenxi95.twig.repositories.TagRepository
 import com.yuanchenxi95.twig.utils.TEST_AUTHENTICATION_TOKEN
 import com.yuanchenxi95.twig.utils.setUpTagData
@@ -53,9 +53,9 @@ class CreateTagProducerModuleTest : AbstractTestBase() {
 
     @Test
     fun `create tag`() {
-        val request = CreateTagRequest.newBuilder()
-            .setName(TAG_NAME)
-            .build()
+        val request = createTagRequest {
+            name = TAG_NAME
+        }
 
         StepVerifier.create(
             createTagProducerModule.Executor(request, TEST_AUTHENTICATION_TOKEN).execute()
@@ -76,9 +76,9 @@ class CreateTagProducerModuleTest : AbstractTestBase() {
     @Test
     fun `create tag should fail with duplicate tags`() {
         setUpTagData(template).block()
-        val request = CreateTagRequest.newBuilder()
-            .setName(STORED_TAG_1.tagName)
-            .build()
+        val request = createTagRequest {
+            name = STORED_TAG_1.tagName
+        }
 
         StepVerifier.create(
             createTagProducerModule.Executor(request, TEST_AUTHENTICATION_TOKEN).execute()

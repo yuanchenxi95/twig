@@ -13,6 +13,7 @@ import com.yuanchenxi95.twig.producermodules.ProducerModule
 import com.yuanchenxi95.twig.protobuf.api.Bookmark
 import com.yuanchenxi95.twig.protobuf.api.UpdateBookmarkRequest
 import com.yuanchenxi95.twig.protobuf.api.UpdateBookmarkResponse
+import com.yuanchenxi95.twig.protobuf.api.updateBookmarkResponse
 import com.yuanchenxi95.twig.utils.databaseutils.computeDiff
 import com.yuanchenxi95.twig.utils.protobufutils.FieldMaskTree
 import com.yuanchenxi95.twig.utils.reactorutils.parallelExecuteWithLimit
@@ -114,7 +115,9 @@ class UpdateBookmarkProducerModule : ProducerModule<UpdateBookmarkResponse> {
 
             return parallelExecuteWithLimit(updateOperations).then(
                 getBookmark().map {
-                    UpdateBookmarkResponse.newBuilder().setBookmark(it).build()
+                    updateBookmarkResponse {
+                        bookmark = it
+                    }
                 }
             )
         }

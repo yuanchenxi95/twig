@@ -11,6 +11,7 @@ import com.yuanchenxi95.twig.modelservices.StoredTagsBookmarksService
 import com.yuanchenxi95.twig.producermodules.ProducerModule
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
 import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkResponse
+import com.yuanchenxi95.twig.protobuf.api.createBookmarkResponse
 import com.yuanchenxi95.twig.repositories.BookmarkRepository
 import com.yuanchenxi95.twig.repositories.UrlRepository
 import com.yuanchenxi95.twig.streams.UrlStreamProducer
@@ -127,13 +128,9 @@ class CreateBookmarkProducerModule : ProducerModule<CreateBookmarkResponse> {
 
         override fun execute(): Mono<CreateBookmarkResponse> {
             return transactionRunner().map {
-                CreateBookmarkResponse.newBuilder()
-                    .setBookmark(
-                        bookmarkConverter.doForward(
-                            it.convert()
-                        )
-                    )
-                    .build()
+                createBookmarkResponse {
+                    bookmark = bookmarkConverter.doForward(it.convert())
+                }
             }
         }
     }

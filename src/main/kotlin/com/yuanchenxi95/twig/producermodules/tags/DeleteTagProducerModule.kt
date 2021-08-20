@@ -7,6 +7,7 @@ import com.yuanchenxi95.twig.models.StoredTag
 import com.yuanchenxi95.twig.models.StoredTagsBookmarks
 import com.yuanchenxi95.twig.producermodules.ProducerModule
 import com.yuanchenxi95.twig.protobuf.api.DeleteTagResponse
+import com.yuanchenxi95.twig.protobuf.api.deleteTagResponse
 import com.yuanchenxi95.twig.utils.databaseutils.mapDeleteIntToBoolean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
@@ -70,8 +71,7 @@ class DeleteTagProducerModule : ProducerModule<DeleteTagResponse> {
                     throw OperationFailedException("Delete tag '$tagId' failed.")
                 }
             ).map {
-                DeleteTagResponse.newBuilder()
-                    .build()
+                deleteTagResponse { }
             }
         }
     }

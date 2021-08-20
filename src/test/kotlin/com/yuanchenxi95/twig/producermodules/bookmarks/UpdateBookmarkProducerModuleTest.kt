@@ -11,7 +11,9 @@ import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.models.StoredTagsBookmarks
 import com.yuanchenxi95.twig.modelservices.StoredTagService
 import com.yuanchenxi95.twig.protobuf.api.Bookmark
-import com.yuanchenxi95.twig.protobuf.api.UpdateBookmarkRequest
+import com.yuanchenxi95.twig.protobuf.api.bookmark
+import com.yuanchenxi95.twig.protobuf.api.copy
+import com.yuanchenxi95.twig.protobuf.api.updateBookmarkRequest
 import com.yuanchenxi95.twig.utils.TEST_AUTHENTICATION_TOKEN
 import com.yuanchenxi95.twig.utils.reactorutils.parallelExecuteWithLimit
 import com.yuanchenxi95.twig.utils.setUpTestData
@@ -80,18 +82,15 @@ internal class UpdateBookmarkProducerModuleTest : AbstractTestBase() {
             )
         ).block()
 
-        val updateBookmarkRequest = UpdateBookmarkRequest.newBuilder()
-            .setBookmark(
-                Bookmark.newBuilder()
-                    .setId(STORED_BOOKMARK_1.id)
-                    .addAllTags(TAGS)
+        val updateBookmarkRequest = updateBookmarkRequest {
+            bookmark = bookmark {
+                id = STORED_BOOKMARK_1.id
+                tags.addAll(TAGS)
+            }
+            updateMask = FieldMaskUtil.fromFieldNumbers(
+                Bookmark::class.java, Bookmark.TAGS_FIELD_NUMBER
             )
-            .setUpdateMask(
-                FieldMaskUtil.fromFieldNumbers(
-                    Bookmark::class.java, Bookmark.TAGS_FIELD_NUMBER
-                )
-            )
-            .build()
+        }
 
         val updateBookmarkExecutor = updateBookmarkProducerModule.Executor(
             updateBookmarkRequest,
@@ -103,9 +102,10 @@ internal class UpdateBookmarkProducerModuleTest : AbstractTestBase() {
                 assertThat(it.bookmark)
                     .ignoringRepeatedFieldOrder()
                     .isEqualTo(
-                        API_BOOKMARK_1.toBuilder()
-                            .setId(STORED_BOOKMARK_1.id)
-                            .addAllTags(TAGS).build()
+                        API_BOOKMARK_1.copy {
+                            id = STORED_BOOKMARK_1.id
+                            tags.addAll(TAGS)
+                        }
                     )
             }.verifyComplete()
 
@@ -135,17 +135,12 @@ internal class UpdateBookmarkProducerModuleTest : AbstractTestBase() {
             )
         ).block()
 
-        val updateBookmarkRequest = UpdateBookmarkRequest.newBuilder()
-            .setBookmark(
-                Bookmark.newBuilder()
-                    .setId(STORED_BOOKMARK_1.id)
+        val updateBookmarkRequest = updateBookmarkRequest {
+            bookmark = bookmark { id = STORED_BOOKMARK_1.id }
+            updateMask = FieldMaskUtil.fromFieldNumbers(
+                Bookmark::class.java, Bookmark.TAGS_FIELD_NUMBER
             )
-            .setUpdateMask(
-                FieldMaskUtil.fromFieldNumbers(
-                    Bookmark::class.java, Bookmark.TAGS_FIELD_NUMBER
-                )
-            )
-            .build()
+        }
 
         val updateBookmarkExecutor = updateBookmarkProducerModule.Executor(
             updateBookmarkRequest,
@@ -174,19 +169,15 @@ internal class UpdateBookmarkProducerModuleTest : AbstractTestBase() {
 
     @Test
     fun `updateBookmark user does not match failed`() {
-        val updateBookmarkRequest = UpdateBookmarkRequest.newBuilder()
-            .setBookmark(
-                Bookmark.newBuilder()
-                    .setId(STORED_BOOKMARK_3.id)
-                    .addAllTags(TAGS)
+        val updateBookmarkRequest = updateBookmarkRequest {
+            bookmark = bookmark {
+                id = STORED_BOOKMARK_3.id
+                tags.addAll(TAGS)
+            }
+            updateMask = FieldMaskUtil.fromFieldNumbers(
+                Bookmark::class.java, Bookmark.TAGS_FIELD_NUMBER
             )
-            .setUpdateMask(
-                FieldMaskUtil.fromFieldNumbers(
-                    Bookmark::class.java, Bookmark.TAGS_FIELD_NUMBER
-                )
-            )
-            .build()
-
+        }
         val updateBookmarkExecutor = updateBookmarkProducerModule.Executor(
             updateBookmarkRequest,
             STORED_BOOKMARK_3.id, TEST_AUTHENTICATION_TOKEN
