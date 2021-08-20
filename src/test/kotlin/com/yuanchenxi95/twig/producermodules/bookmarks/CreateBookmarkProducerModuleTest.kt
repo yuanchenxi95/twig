@@ -12,7 +12,8 @@ import com.yuanchenxi95.twig.models.StoredTag
 import com.yuanchenxi95.twig.models.StoredUrl
 import com.yuanchenxi95.twig.modelservices.StoredTagService
 import com.yuanchenxi95.twig.protobuf.api.Bookmark
-import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
+import com.yuanchenxi95.twig.protobuf.api.copy
+import com.yuanchenxi95.twig.protobuf.api.createBookmarkRequest
 import com.yuanchenxi95.twig.repositories.UrlRepository
 import com.yuanchenxi95.twig.utils.TEST_AUTHENTICATION_TOKEN
 import com.yuanchenxi95.twig.utils.setUpTestData
@@ -57,9 +58,9 @@ internal class CreateBookmarkProducerModuleTest : AbstractTestBase() {
 
     @Test
     fun `create bookmark`() {
-        val request = CreateBookmarkRequest.newBuilder()
-            .setBookmark(API_BOOKMARK_1)
-            .build()
+        val request = createBookmarkRequest {
+            bookmark = API_BOOKMARK_1
+        }
         StepVerifier.create(
             createBookmarkProducerModule.Executor(
                 request,
@@ -88,13 +89,14 @@ internal class CreateBookmarkProducerModuleTest : AbstractTestBase() {
 
     @Test
     fun `create bookmark with tags should success`() {
-        val tags = listOf("foo", "bar")
-        val bookmarkWithTags = API_BOOKMARK_1
-            .toBuilder().clearId()
-            .addAllTags(tags).build()
-        val request = CreateBookmarkRequest.newBuilder()
-            .setBookmark(bookmarkWithTags)
-            .build()
+        val TAGS = listOf("foo", "bar")
+        val bookmarkWithTags = API_BOOKMARK_1.copy {
+            clearId()
+            tags.addAll(TAGS)
+        }
+        val request = createBookmarkRequest {
+            bookmark = bookmarkWithTags
+        }
 
         val createdBookmark = createBookmarkProducerModule.Executor(
             request,
@@ -117,10 +119,15 @@ internal class CreateBookmarkProducerModuleTest : AbstractTestBase() {
                     ).isEqualTo(STORED_URL_1)
             }
             .verifyComplete()
-        StepVerifier.create(storedTagService.queryTagsForBookmark(STORED_USER_1.id, createdBookmark.id))
+        StepVerifier.create(
+            storedTagService.queryTagsForBookmark(
+                STORED_USER_1.id,
+                createdBookmark.id
+            )
+        )
             .consumeNextWith {
                 assertThat(it.size).isEqualTo(2)
-                assertThat(it.map(StoredTag::tagName)).containsExactlyInAnyOrder(*tags.toTypedArray())
+                assertThat(it.map(StoredTag::tagName)).containsExactlyInAnyOrder(*TAGS.toTypedArray())
             }
     }
 }

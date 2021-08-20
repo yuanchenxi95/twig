@@ -9,6 +9,8 @@ import com.yuanchenxi95.twig.framework.utils.UuidUtils
 import com.yuanchenxi95.twig.models.StoredBookmark
 import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.protobuf.api.ListBookmarkResponse
+import com.yuanchenxi95.twig.protobuf.api.copy
+import com.yuanchenxi95.twig.protobuf.api.listBookmarkResponse
 import com.yuanchenxi95.twig.utils.TEST_AUTHENTICATION_TOKEN
 import com.yuanchenxi95.twig.utils.reactorutils.parallelExecuteWithLimit
 import com.yuanchenxi95.twig.utils.setUpTestData
@@ -67,10 +69,11 @@ class ListBookmarkProducerModuleTest : AbstractTestBase() {
         )
             .consumeNextWith {
                 assertThat(it).isEqualTo(
-                    ListBookmarkResponse.newBuilder()
-                        .addBookmarks(API_BOOKMARK_1)
-                        .addBookmarks(API_BOOKMARK_3)
-                        .setNextPageToken("").build()
+                    listBookmarkResponse {
+                        bookmarks.add(API_BOOKMARK_1)
+                        bookmarks.add(API_BOOKMARK_3)
+                        nextPageToken = ""
+                    }
                 )
             }
             .verifyComplete()
@@ -111,17 +114,20 @@ class ListBookmarkProducerModuleTest : AbstractTestBase() {
         )
             .consumeNextWith {
                 ProtoTruth.assertThat(it).ignoringRepeatedFieldOrder().isEqualTo(
-                    ListBookmarkResponse.newBuilder()
-                        .addBookmarks(
-                            API_BOOKMARK_1.toBuilder()
-                                .addTags(STORED_TAG_1.tagName)
-                                .build()
-                        ).addBookmarks(
-                            API_BOOKMARK_3.toBuilder()
-                                .addTags(STORED_TAG_2.tagName)
-                                .addTags(STORED_TAG_1.tagName)
-                                .build()
-                        ).setNextPageToken("").build()
+                    listBookmarkResponse {
+                        bookmarks.add(
+                            API_BOOKMARK_1.copy {
+                                tags.add(STORED_TAG_1.tagName)
+                            }
+                        )
+                        bookmarks.add(
+                            API_BOOKMARK_3.copy {
+                                tags.add(STORED_TAG_2.tagName)
+                                tags.add(STORED_TAG_1.tagName)
+                            }
+                        )
+                        nextPageToken = ""
+                    }
                 )
             }
             .verifyComplete()
@@ -129,7 +135,9 @@ class ListBookmarkProducerModuleTest : AbstractTestBase() {
 
     @Test
     fun `list no bookmark success`() {
-        StepVerifier.create(listBookmarkProducerModule.Executor(10, "", TEST_AUTHENTICATION_TOKEN).execute())
+        StepVerifier.create(
+            listBookmarkProducerModule.Executor(10, "", TEST_AUTHENTICATION_TOKEN).execute()
+        )
             .assertNext {
                 assertThat(it).isEqualTo(
                     ListBookmarkResponse.getDefaultInstance()
@@ -148,8 +156,24 @@ class ListBookmarkProducerModuleTest : AbstractTestBase() {
         ).then(
             parallelExecuteWithLimit(
                 listOf(
-                    template.insert(StoredBookmark(id = "1", urlId = STORED_URL_1.id, displayName = "display name 1", userId = STORED_USER_1.id, createTime = instant)),
-                    template.insert(StoredBookmark(id = "4", urlId = STORED_URL_2.id, displayName = "display name 1", userId = STORED_USER_1.id, createTime = instant)),
+                    template.insert(
+                        StoredBookmark(
+                            id = "1",
+                            urlId = STORED_URL_1.id,
+                            displayName = "display name 1",
+                            userId = STORED_USER_1.id,
+                            createTime = instant
+                        )
+                    ),
+                    template.insert(
+                        StoredBookmark(
+                            id = "4",
+                            urlId = STORED_URL_2.id,
+                            displayName = "display name 1",
+                            userId = STORED_USER_1.id,
+                            createTime = instant
+                        )
+                    ),
                 )
             ).then()
         ).block()
@@ -180,8 +204,24 @@ class ListBookmarkProducerModuleTest : AbstractTestBase() {
         ).then(
             parallelExecuteWithLimit(
                 listOf(
-                    template.insert(StoredBookmark(id = "1", urlId = STORED_URL_1.id, displayName = "display name 1", userId = STORED_USER_1.id, createTime = instant)),
-                    template.insert(StoredBookmark(id = "4", urlId = STORED_URL_2.id, displayName = "display name 1", userId = STORED_USER_1.id, createTime = instant)),
+                    template.insert(
+                        StoredBookmark(
+                            id = "1",
+                            urlId = STORED_URL_1.id,
+                            displayName = "display name 1",
+                            userId = STORED_USER_1.id,
+                            createTime = instant
+                        )
+                    ),
+                    template.insert(
+                        StoredBookmark(
+                            id = "4",
+                            urlId = STORED_URL_2.id,
+                            displayName = "display name 1",
+                            userId = STORED_USER_1.id,
+                            createTime = instant
+                        )
+                    ),
                 )
             ).then()
         ).block()

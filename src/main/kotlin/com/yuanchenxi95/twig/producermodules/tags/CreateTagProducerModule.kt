@@ -7,8 +7,8 @@ import com.yuanchenxi95.twig.models.StoredTag
 import com.yuanchenxi95.twig.producermodules.ProducerModule
 import com.yuanchenxi95.twig.protobuf.api.CreateTagRequest
 import com.yuanchenxi95.twig.protobuf.api.CreateTagResponse
-import com.yuanchenxi95.twig.protobuf.api.Tag
-import com.yuanchenxi95.twig.repositories.TagRepository
+import com.yuanchenxi95.twig.protobuf.api.createTagResponse
+import com.yuanchenxi95.twig.protobuf.api.tag
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria
@@ -26,9 +26,6 @@ class CreateTagProducerModule : ProducerModule<CreateTagResponse> {
 
     @Autowired
     lateinit var r2dbcEntityTemplate: R2dbcEntityTemplate
-
-    @Autowired
-    lateinit var tagRepository: TagRepository
 
     @Autowired
     lateinit var uuidUtils: UuidUtils
@@ -73,12 +70,12 @@ class CreateTagProducerModule : ProducerModule<CreateTagResponse> {
 
         override fun execute(): Mono<CreateTagResponse> {
             return transactionRunner().map {
-                CreateTagResponse.newBuilder()
-                    .setTag(
-                        Tag.newBuilder().setId(it.id)
-                            .setName(it.tagName)
-                    )
-                    .build()
+                createTagResponse {
+                    tag = tag {
+                        id = it.id
+                        name = it.tagName
+                    }
+                }
             }
         }
     }

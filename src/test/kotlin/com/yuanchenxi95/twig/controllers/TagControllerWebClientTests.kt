@@ -11,9 +11,10 @@ import com.yuanchenxi95.twig.data.STORED_SESSION_1
 import com.yuanchenxi95.twig.data.STORED_TAG_1
 import com.yuanchenxi95.twig.framework.codecs.convertProtobufToJson
 import com.yuanchenxi95.twig.models.StoredSession
-import com.yuanchenxi95.twig.protobuf.api.CreateTagRequest
 import com.yuanchenxi95.twig.protobuf.api.CreateTagResponse
 import com.yuanchenxi95.twig.protobuf.api.DeleteTagResponse
+import com.yuanchenxi95.twig.protobuf.api.createTagRequest
+import com.yuanchenxi95.twig.protobuf.api.deleteTagResponse
 import com.yuanchenxi95.twig.repositories.TagRepository
 import com.yuanchenxi95.twig.utils.getResponse
 import com.yuanchenxi95.twig.utils.setUpTagData
@@ -59,9 +60,9 @@ class TagControllerWebClientTests : AbstractTestBase() {
 
     @Test
     fun `create tag happy case`() {
-        val request = CreateTagRequest.newBuilder()
-            .setName(TAG_NAME)
-            .build()
+        val request = createTagRequest {
+            name = TAG_NAME
+        }
 
         val responseSpec = client.post()
             .uri(CREATE_TAG)
@@ -89,9 +90,7 @@ class TagControllerWebClientTests : AbstractTestBase() {
 
     @Test
     fun `create tag failed without name`() {
-        val request = CreateTagRequest.newBuilder()
-            .build()
-
+        val request = createTagRequest { }
         val responseSpec = client.post()
             .uri(CREATE_TAG)
             .cookies {
@@ -118,10 +117,9 @@ class TagControllerWebClientTests : AbstractTestBase() {
 
     @Test
     fun `create tag already existed ignored`() {
-        val request = CreateTagRequest.newBuilder()
-            .setName(TAG_NAME)
-            .build()
-
+        val request = createTagRequest {
+            name = TAG_NAME
+        }
         val responseSpec1 = client.post()
             .uri(CREATE_TAG)
             .cookies {
@@ -174,7 +172,7 @@ class TagControllerWebClientTests : AbstractTestBase() {
 
         StepVerifier.create(getResponse(responseSpec, DeleteTagResponse.getDefaultInstance()))
             .assertNext {
-                assertThat(it).isEqualTo(DeleteTagResponse.newBuilder().build())
+                assertThat(it).isEqualTo(deleteTagResponse { })
             }
             .verifyComplete()
 

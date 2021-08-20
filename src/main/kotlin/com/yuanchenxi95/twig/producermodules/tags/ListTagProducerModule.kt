@@ -5,7 +5,8 @@ import com.yuanchenxi95.twig.models.StoredTag
 import com.yuanchenxi95.twig.modelservices.StoredTagService
 import com.yuanchenxi95.twig.producermodules.ProducerModule
 import com.yuanchenxi95.twig.protobuf.api.ListTagResponse
-import com.yuanchenxi95.twig.protobuf.api.Tag
+import com.yuanchenxi95.twig.protobuf.api.listTagResponse
+import com.yuanchenxi95.twig.protobuf.api.tag
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.stereotype.Component
@@ -36,9 +37,16 @@ class ListTagProducerModule : ProducerModule<ListTagProducerModule> {
 
         override fun execute(): Mono<ListTagResponse> {
             return transactionRunner().map {
-                val apiTags =
-                    it.map { tag -> Tag.newBuilder().setId(tag.id).setName(tag.tagName).build() }
-                ListTagResponse.newBuilder().addAllTags(apiTags).build()
+                listTagResponse {
+                    it.forEach { apiTag ->
+                        tags.add(
+                            tag {
+                                id = apiTag.id
+                                name = apiTag.tagName
+                            }
+                        )
+                    }
+                }
             }
         }
     }

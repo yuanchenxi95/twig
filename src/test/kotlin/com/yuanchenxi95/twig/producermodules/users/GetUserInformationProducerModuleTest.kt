@@ -6,7 +6,7 @@ import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
 import com.yuanchenxi95.twig.data.STORED_USER_1
 import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.producermodules.tags.CreateTagProducerModule
-import com.yuanchenxi95.twig.protobuf.api.GetUserInformationResponse
+import com.yuanchenxi95.twig.protobuf.api.getUserInformationResponse
 import com.yuanchenxi95.twig.utils.TEST_AUTHENTICATION_TOKEN
 import com.yuanchenxi95.twig.utils.protobufutils.convertInstantToTimestamp
 import com.yuanchenxi95.twig.utils.setUpTestData
@@ -52,12 +52,13 @@ internal class GetUserInformationProducerModuleTest : AbstractTestBase() {
         StepVerifier.create(getUserInformationResponseExecutor.execute())
             .consumeNextWith {
                 assertThat(it).isEqualTo(
-                    GetUserInformationResponse.newBuilder()
-                        .setId(STORED_USER_1.id)
-                        .setName(STORED_USER_1.name)
-                        .setEmail(STORED_USER_1.userEmail)
-                        .setExpirationTime(convertInstantToTimestamp(TEST_AUTHENTICATION_TOKEN.getExpirationTime()))
-                        .build()
+                    getUserInformationResponse {
+                        id = STORED_USER_1.id
+                        name = STORED_USER_1.name
+                        email = STORED_USER_1.userEmail
+                        expirationTime =
+                            convertInstantToTimestamp(TEST_AUTHENTICATION_TOKEN.getExpirationTime())
+                    }
                 )
             }
             .verifyComplete()

@@ -6,7 +6,7 @@ import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
 import com.yuanchenxi95.twig.data.INVALID_UUID
 import com.yuanchenxi95.twig.data.STORED_TAG_1
 import com.yuanchenxi95.twig.models.StoredSession
-import com.yuanchenxi95.twig.protobuf.api.DeleteTagResponse
+import com.yuanchenxi95.twig.protobuf.api.deleteTagResponse
 import com.yuanchenxi95.twig.repositories.TagRepository
 import com.yuanchenxi95.twig.utils.TEST_AUTHENTICATION_TOKEN
 import com.yuanchenxi95.twig.utils.setUpTagData
@@ -63,7 +63,7 @@ class DeleteTagProducerModuleTest : AbstractTestBase() {
             deleteTagProducerModule.Executor(tagId, TEST_AUTHENTICATION_TOKEN).execute()
         )
             .assertNext {
-                assertThat(it).isEqualTo(DeleteTagResponse.newBuilder().build())
+                assertThat(it).isEqualTo(deleteTagResponse { })
             }.verifyComplete()
 
         StepVerifier.create(tagRepository.findAll().collectList())

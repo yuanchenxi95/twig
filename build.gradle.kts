@@ -3,8 +3,8 @@ import org.gradle.kotlin.dsl.proto
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
-val grpcVersion = "1.37.0"
-val protobufJavaVersion = "3.15.8"
+val grpcVersion = "1.40.0"
+val protobufJavaVersion = "3.17.2"
 val packageName = "com/yuanchenxi95/twig"
 val mainClass = "$packageName/TwigApplicationKt"
 
@@ -59,9 +59,12 @@ repositories {
 dependencies {
     compile("io.projectreactor.kotlin", "reactor-kotlin-extensions")
     compile("org.springframework.boot", "spring-boot-starter-thymeleaf")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.google.guava:guava:30.1.1-jre")
     implementation("com.google.protobuf", "protobuf-java", protobufJavaVersion)
     implementation("com.google.protobuf", "protobuf-java-util", protobufJavaVersion)
+    implementation("com.google.protobuf", "protobuf-kotlin", protobufJavaVersion)
     implementation("commons-validator", "commons-validator", "1.7")
     implementation("dev.miku:r2dbc-mysql")
     implementation("io.grpc", "grpc-protobuf", grpcVersion)
@@ -69,8 +72,6 @@ dependencies {
     implementation("io.sentry:sentry-spring-boot-starter:4.3.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("org.springframework.boot", "spring-boot-configuration-processor")
     implementation("org.springframework.boot", "spring-boot-starter-oauth2-client")
     implementation("org.springframework.boot", "spring-boot-starter-security")
@@ -112,6 +113,7 @@ protobuf {
         id("grpc") {
             artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
         }
+        id("kotlin")
     }
     generateProtoTasks {
         all().forEach { task ->
@@ -119,6 +121,7 @@ protobuf {
                 id("grpc") {
                     outputSubDir = "grpc"
                 }
+                id("kotlin")
             }
             task.generateDescriptorSet = true
             task.outputs.upToDateWhen { false }

@@ -1,6 +1,7 @@
 package com.yuanchenxi95.twig.controllers
 
 import com.google.protobuf.Empty
+import com.google.protobuf.empty
 import com.yuanchenxi95.twig.constants.RequestMappingValues
 import com.yuanchenxi95.twig.framework.securities.TwigAuthenticationToken
 import com.yuanchenxi95.twig.modelservices.StoredSessionService
@@ -35,7 +36,7 @@ class SignOutController {
 
         return storedSessionService.deleteSession(authentication.getSessionId())
             .map {
-                Empty.newBuilder().build()
+                empty { }
             }
     }
 }

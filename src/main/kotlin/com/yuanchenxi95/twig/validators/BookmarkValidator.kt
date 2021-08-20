@@ -7,7 +7,6 @@ import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
 import com.yuanchenxi95.twig.protobuf.api.UpdateBookmarkRequest
 import com.yuanchenxi95.twig.utils.datautils.decodeBookmarkPageToken
 import org.apache.commons.validator.routines.UrlValidator
-import java.util.*
 
 fun validateBookmarkDisplayName(bookmark: Bookmark) {
     validationAssert(

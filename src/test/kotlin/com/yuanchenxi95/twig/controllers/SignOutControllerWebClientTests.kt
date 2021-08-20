@@ -2,6 +2,7 @@ package com.yuanchenxi95.twig.controllers
 
 import com.google.common.truth.Truth
 import com.google.protobuf.Empty
+import com.google.protobuf.empty
 import com.yuanchenxi95.protobuf.protobuf.api.TwigApiError
 import com.yuanchenxi95.twig.AbstractTestBase
 import com.yuanchenxi95.twig.annotations.MockDatabaseConfiguration
@@ -60,7 +61,7 @@ class SignOutControllerWebClientTests : AbstractTestBase() {
         StepVerifier.create(getResponse(firstSignOutResponseSpec, Empty.getDefaultInstance()))
             .assertNext {
                 Truth.assertThat(it)
-                    .isEqualTo(Empty.newBuilder().build())
+                    .isEqualTo(empty { })
             }
             .verifyComplete()
 

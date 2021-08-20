@@ -12,7 +12,9 @@ import com.yuanchenxi95.twig.modelservices.StoredTagService
 import com.yuanchenxi95.twig.modelservices.StoredTagsBookmarksService
 import com.yuanchenxi95.twig.modelservices.StoredUrlService
 import com.yuanchenxi95.twig.producermodules.ProducerModule
-import com.yuanchenxi95.twig.protobuf.api.*
+import com.yuanchenxi95.twig.protobuf.api.Bookmark
+import com.yuanchenxi95.twig.protobuf.api.ListBookmarkResponse
+import com.yuanchenxi95.twig.protobuf.api.listBookmarkResponse
 import com.yuanchenxi95.twig.repositories.BookmarkRepository
 import com.yuanchenxi95.twig.utils.datautils.decodeBookmarkPageToken
 import com.yuanchenxi95.twig.utils.datautils.encodeBookmarkPageToken
@@ -63,11 +65,19 @@ class ListBookmarkProducerModule : ProducerModule<ListBookmarkResponse> {
 
         private fun listStoredBookmark(): Mono<List<StoredBookmark>> {
             if (pageToken.isNullOrEmpty()) {
-                return bookmarkService.queryBookmarksForUserOrderByCreateTime(authentication.getUserId(), pageSize + 1)
+                return bookmarkService.queryBookmarksForUserOrderByCreateTime(
+                    authentication.getUserId(),
+                    pageSize + 1
+                )
             }
 
             val (lastCreateTime, lastId) = decodeBookmarkPageToken(pageToken)
-            return bookmarkService.queryBookmarksForUserByLastIdAndLastCreateTime(authentication.getUserId(), pageSize + 1, lastCreateTime, lastId)
+            return bookmarkService.queryBookmarksForUserByLastIdAndLastCreateTime(
+                authentication.getUserId(),
+                pageSize + 1,
+                lastCreateTime,
+                lastId
+            )
         }
 
         private fun getTagsMapById(tagsBookmarks: Mono<List<StoredTagsBookmarks>>): Mono<Map<String, StoredTag>> {
@@ -140,10 +150,10 @@ class ListBookmarkProducerModule : ProducerModule<ListBookmarkResponse> {
 
         override fun execute(): Mono<ListBookmarkResponse> {
             return transactionRunner().map {
-                ListBookmarkResponse.newBuilder()
-                    .addAllBookmarks(it.first)
-                    .setNextPageToken(it.second)
-                    .build()
+                listBookmarkResponse {
+                    bookmarks.addAll(it.first)
+                    nextPageToken = it.second
+                }
             }
         }
     }

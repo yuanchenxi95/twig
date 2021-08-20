@@ -4,6 +4,7 @@ import com.yuanchenxi95.twig.framework.securities.TwigAuthenticationToken
 import com.yuanchenxi95.twig.models.StoredUser
 import com.yuanchenxi95.twig.producermodules.ProducerModule
 import com.yuanchenxi95.twig.protobuf.api.GetUserInformationResponse
+import com.yuanchenxi95.twig.protobuf.api.getUserInformationResponse
 import com.yuanchenxi95.twig.utils.databaseutils.selectOneById
 import com.yuanchenxi95.twig.utils.protobufutils.convertInstantToTimestamp
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,14 +24,13 @@ class GetUserInformationProducerModule {
         override fun execute(): Mono<GetUserInformationResponse> {
             return selectOneById<StoredUser>(authentication.getUserId(), r2dbcEntityTemplate)
                 .map {
-                    val expirationTime =
-                        convertInstantToTimestamp(authentication.getExpirationTime())
-                    GetUserInformationResponse.newBuilder()
-                        .setId(it.id)
-                        .setEmail(it.userEmail)
-                        .setName(it.name)
-                        .setExpirationTime(expirationTime)
-                        .build()
+                    getUserInformationResponse {
+                        id = it.id
+                        email = it.userEmail
+                        name = it.name
+                        expirationTime =
+                            convertInstantToTimestamp(authentication.getExpirationTime())
+                    }
                 }
         }
     }

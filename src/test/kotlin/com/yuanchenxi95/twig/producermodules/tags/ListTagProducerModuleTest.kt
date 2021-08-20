@@ -9,6 +9,7 @@ import com.yuanchenxi95.twig.data.STORED_TAG_1
 import com.yuanchenxi95.twig.data.STORED_TAG_2
 import com.yuanchenxi95.twig.models.StoredSession
 import com.yuanchenxi95.twig.protobuf.api.ListTagResponse
+import com.yuanchenxi95.twig.protobuf.api.listTagResponse
 import com.yuanchenxi95.twig.utils.TEST_AUTHENTICATION_TOKEN
 import com.yuanchenxi95.twig.utils.setUpTestData
 import org.junit.jupiter.api.BeforeEach
@@ -51,7 +52,10 @@ class ListTagProducerModuleTest : AbstractTestBase() {
         StepVerifier.create(listTagProducerModule.Executor(TEST_AUTHENTICATION_TOKEN).execute())
             .assertNext {
                 assertThat(it).isEqualTo(
-                    ListTagResponse.newBuilder().addTags(API_TAG_2).addTags(API_TAG_1).build()
+                    listTagResponse {
+                        tags.add(API_TAG_2)
+                        tags.add(API_TAG_1)
+                    }
                 )
             }.verifyComplete()
     }

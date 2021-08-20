@@ -167,7 +167,11 @@ class FieldMaskTree(mask: FieldMask?) {
     /**
      * Merges all fields specified by this FieldMaskTree from `source` to `destination`.
      */
-    fun merge(source: Message, destination: Message.Builder, options: MergeOptions = DEFAULT_OPTION) {
+    fun merge(
+        source: Message,
+        destination: Message.Builder,
+        options: MergeOptions = DEFAULT_OPTION
+    ) {
         if (source.descriptorForType != destination.descriptorForType) {
             throw IllegalArgumentException("Cannot merge messages of different types.")
         }
@@ -332,7 +336,8 @@ class FieldMaskTree(mask: FieldMask?) {
         val iterator = fieldNumberPath.iterator()
         var descriptorForType = source.descriptorForType
         while (iterator.hasNext()) {
-            val fieldDescriptor = descriptorForType.findFieldByNumber(iterator.next()) ?: return false
+            val fieldDescriptor =
+                descriptorForType.findFieldByNumber(iterator.next()) ?: return false
             val childNode = children[fieldDescriptor.toProto().name] ?: return false
             val field = source.getField(fieldDescriptor)
             when {

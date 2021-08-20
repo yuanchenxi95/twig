@@ -8,10 +8,7 @@ import com.yuanchenxi95.twig.constants.RequestMappingValues
 import com.yuanchenxi95.twig.data.*
 import com.yuanchenxi95.twig.framework.codecs.convertProtobufToJson
 import com.yuanchenxi95.twig.models.StoredSession
-import com.yuanchenxi95.twig.protobuf.api.Bookmark
-import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
-import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkResponse
-import com.yuanchenxi95.twig.protobuf.api.ListBookmarkResponse
+import com.yuanchenxi95.twig.protobuf.api.*
 import com.yuanchenxi95.twig.repositories.BookmarkRepository
 import com.yuanchenxi95.twig.utils.getResponse
 import com.yuanchenxi95.twig.utils.reactorutils.parallelExecuteWithLimit
@@ -55,9 +52,11 @@ class BookmarkControllerWebClientTests : AbstractTestBase() {
 
     @Test
     fun `create bookmark with invalid url should fail`() {
-        val request = CreateBookmarkRequest.newBuilder()
-            .setBookmark(Bookmark.newBuilder().setUrl("invalid_url"))
-            .build()
+        val request = createBookmarkRequest {
+            bookmark = bookmark {
+                url = "invalid_url"
+            }
+        }
         val responseSpec = client.post()
             .uri(RequestMappingValues.CREATE_BOOKMARK)
             .cookies {
@@ -78,9 +77,11 @@ class BookmarkControllerWebClientTests : AbstractTestBase() {
 
     @Test
     fun `create bookmark with bookmark 1 should success`() {
-        val request = CreateBookmarkRequest.newBuilder()
-            .setBookmark(API_BOOKMARK_1.toBuilder().clearId())
-            .build()
+        val request = createBookmarkRequest {
+            bookmark = API_BOOKMARK_1.copy {
+                clearId()
+            }
+        }
         val responseSpec = client.post()
             .uri(RequestMappingValues.CREATE_BOOKMARK)
             .cookies {
@@ -109,12 +110,10 @@ class BookmarkControllerWebClientTests : AbstractTestBase() {
 
     @Test
     fun `create bookmark with bookmark 2 should success`() {
+        val request = createBookmarkRequest {
+            bookmark = API_BOOKMARK_2.copy { clearId() }
+        }
 
-        val request = CreateBookmarkRequest.newBuilder()
-            .setBookmark(
-                API_BOOKMARK_2.toBuilder().clearId()
-            )
-            .build()
         val responseSpec = client.post()
             .uri(RequestMappingValues.CREATE_BOOKMARK)
             .cookies {
@@ -176,9 +175,9 @@ class BookmarkControllerWebClientTests : AbstractTestBase() {
                 ProtoTruth.assertThat(it.bookmarksList)
                     .isEqualTo(
                         listOf(
-                            API_BOOKMARK_1.toBuilder().addTags(
-                                STORED_TAG_1.tagName
-                            ).build()
+                            API_BOOKMARK_1.copy {
+                                tags.add(STORED_TAG_1.tagName)
+                            }
                         )
                     )
                 assertThat(it.nextPageToken).isEmpty()
@@ -248,9 +247,9 @@ class BookmarkControllerWebClientTests : AbstractTestBase() {
                 ProtoTruth.assertThat(it.bookmarksList)
                     .isEqualTo(
                         listOf(
-                            API_BOOKMARK_3.toBuilder().addTags(
-                                STORED_TAG_1.tagName
-                            ).build()
+                            API_BOOKMARK_3.copy {
+                                tags.add(STORED_TAG_1.tagName)
+                            }
                         )
                     )
                 assertThat(it.nextPageToken).isEmpty()
