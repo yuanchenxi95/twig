@@ -15,8 +15,8 @@ spring:
       client:
         registration:
           github:
-            clientId: ae9a0ded1a9173830878
-            clientSecret: a01a8046cdec11dca178de6fa946facc786d9405
+            clientId: 8bfd7ae81443967f831c
+            clientSecret: 0000000000000000000000000000000000000000
 
 sentry:
   dsn: 'https://4a1d7adfa01f42ecad6092d0f3cd8466@o759320.ingest.sentry.io/5792476'

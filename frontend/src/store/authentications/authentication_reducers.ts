@@ -40,6 +40,7 @@ export const authenticationReducer = createReducer<
         userInformation: null,
         loadingState: LoadingState.FAILED,
     }))
+    // TODO(yuanchenxi95) call rpc to remove the token in redis.
     .handleAction(authenticationResetAction, (state) => ({
         ...state,
         userInformation: null,
