@@ -24,11 +24,11 @@ import reactor.test.StepVerifier
 import java.time.Duration
 
 @WebFluxTest(
-    controllers = [SignOutController::class],
+    controllers = [AuthenticationController::class],
     excludeAutoConfiguration = [ReactiveUserDetailsServiceAutoConfiguration::class]
 )
 @MockDatabaseConfiguration
-class SignOutControllerWebClientTests : AbstractTestBase() {
+class AuthenticationControllerWebClientTests : AbstractTestBase() {
     @Autowired
     private lateinit var client: WebTestClient
 

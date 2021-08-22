@@ -5,6 +5,8 @@ class RequestMappingValues {
         const val BOOKMARK_ID = "bookmarkId"
         const val TAG_ID = "tagId"
 
+        const val APP_PATH = "/app"
+
         const val CREATE_BOOKMARK = "/api/bookmarks"
         const val LIST_BOOKMARK = "/api/bookmarks"
         const val UPDATE_BOOKMARK = "/api/bookmarks/{$BOOKMARK_ID}"
@@ -15,6 +17,7 @@ class RequestMappingValues {
 
         const val GET_USER_INFORMATION = "/api/users/me"
 
-        const val SIGN_OUT = "/api/signout"
+        const val SIGN_OUT = "/api/authentication/signout"
+        const val AUTHENTICATION_CALLBACK = "/api/authentication/callback"
     }
 }
