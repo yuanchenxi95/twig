@@ -1,6 +1,7 @@
 package com.yuanchenxi95.twig.framework
 
 import com.yuanchenxi95.twig.constants.RequestMappingValues.Companion.AUTHENTICATION_CALLBACK
+import com.yuanchenxi95.twig.constants.RequestMappingValues.Companion.REDIRECTION_URL
 import com.yuanchenxi95.twig.constants.generateAuthenticationError
 import com.yuanchenxi95.twig.framework.codecs.encodeProtobufValue
 import com.yuanchenxi95.twig.framework.securities.TwigSecurityContextRepository
@@ -51,7 +52,7 @@ class SecurityConfiguration {
             }
 
         // Disable authentication for `/public/**`, `/login/**`, and `/` routes.
-        http.authorizeExchange().pathMatchers("/public/**", "/app/**", "/login/**", AUTHENTICATION_CALLBACK, "/").permitAll()
+        http.authorizeExchange().pathMatchers("/public/**", "/app/**", "/login/**", AUTHENTICATION_CALLBACK, REDIRECTION_URL, "/").permitAll()
         http.authorizeExchange().anyExchange().authenticated()
 
         http

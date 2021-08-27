@@ -2,6 +2,13 @@ server:
   error:
     whitelabel:
       enabled: false
+  http2:
+    enabled: true
+  ssl:
+    enabled: true
+    key-store-password: twig-dev
+    key-store-type: PKCS12
+    key-store: classpath:twig-dev.p12
 spring:
   profiles:
     active: development
