@@ -7,6 +7,7 @@ import com.yuanchenxi95.twig.protobuf.api.CreateBookmarkRequest
 import com.yuanchenxi95.twig.protobuf.api.UpdateBookmarkRequest
 import com.yuanchenxi95.twig.utils.datautils.decodeBookmarkPageToken
 import org.apache.commons.validator.routines.UrlValidator
+import java.net.URI
 
 fun validateBookmarkDisplayName(bookmark: Bookmark) {
     validationAssert(
@@ -19,13 +20,21 @@ fun validateBookmarkTags(bookmark: Bookmark) {
     bookmark.tagsList.forEach(::validateTagName)
 }
 
+fun validateUrl(url: String) {
+    validationAssert(url.isNotBlank(), "Url must not be null.")
+    validationAssert(UrlValidator.getInstance().isValid(url), "URL '$url' is not valid.")
+}
+
+fun validateUriScheme(uri: URI) {
+    val scheme = uri.scheme.toLowerCase()
+    validationAssert(scheme == "http" || scheme == "https", "Only http or https are allowed.")
+}
+
 fun validateCreateBookmarkRequest(request: CreateBookmarkRequest) {
     val bookmark = request.bookmark
     validationAssert(bookmark.id.isNullOrBlank(), "Bookmark id must be null")
     validateBookmarkDisplayName(bookmark)
-    val url = bookmark.url
-    validationAssert(url != null, "Bookmark url must not be null.")
-    validationAssert(UrlValidator.getInstance().isValid(url), "URL '$url' is not valid.")
+    validateUrl(bookmark.url)
     validateBookmarkTags(bookmark)
 }
 
@@ -37,15 +46,12 @@ fun validateUpdateBookmarkRequest(request: UpdateBookmarkRequest, bookmarkId: St
     validationAssert(bookmark.id == bookmarkId, "Bookmark id does not match the id in the path.")
     validateBookmarkDisplayName(bookmark)
     validateBookmarkTags(bookmark)
-    val allFields = request.updateMask.allFields
-//    validationAssert(allFields.containsKey(Bookmark.getDescriptor()))
-//    if(reqcontains(Bookmark.))
 }
 
 fun validateListBookmarkRequest(pageSize: Int, pageToken: String) {
     validationAssert(pageSize > 0, "Page Size must be positive integer.")
 
-    if (pageToken.isNullOrEmpty()) {
+    if (pageToken.isEmpty()) {
         return
     }
 

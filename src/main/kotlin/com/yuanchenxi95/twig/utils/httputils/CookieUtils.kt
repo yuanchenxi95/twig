@@ -10,7 +10,7 @@ fun generateResponseCookie(name: String, value: String, maxAge: Duration): Respo
         .path("/")
         .sameSite("Strict")
         // TODO(yuanchenxi95), check the request is HTTP or HTTPS.
-        .secure(false)
+        .secure(true)
         // TODO(yuanchenxi95) Take in the expiration time from the config file.
         .maxAge(maxAge)
 

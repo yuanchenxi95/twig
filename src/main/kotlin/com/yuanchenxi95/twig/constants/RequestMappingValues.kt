@@ -19,5 +19,7 @@ class RequestMappingValues {
 
         const val SIGN_OUT = "/api/authentication/signout"
         const val AUTHENTICATION_CALLBACK = "/api/authentication/callback"
+
+        const val REDIRECTION_URL = "/redirection"
     }
 }

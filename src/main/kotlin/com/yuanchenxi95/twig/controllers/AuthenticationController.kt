@@ -6,9 +6,9 @@ import com.yuanchenxi95.twig.constants.RequestMappingValues
 import com.yuanchenxi95.twig.framework.securities.TwigAuthenticationToken
 import com.yuanchenxi95.twig.modelservices.StoredSessionService
 import com.yuanchenxi95.twig.utils.httputils.generateResponseCookie
+import com.yuanchenxi95.twig.utils.httputils.redirectTo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
@@ -44,8 +44,6 @@ class AuthenticationController {
 
     @GetMapping(RequestMappingValues.AUTHENTICATION_CALLBACK)
     fun callback(serverWebExchange: ServerWebExchange) {
-        val response = serverWebExchange.response
-        response.statusCode = HttpStatus.FOUND
-        response.headers.location = URI.create(RequestMappingValues.APP_PATH)
+        redirectTo(serverWebExchange, URI.create(RequestMappingValues.APP_PATH))
     }
 }
