@@ -48,6 +48,10 @@ fun validateUpdateBookmarkRequest(request: UpdateBookmarkRequest, bookmarkId: St
     validateBookmarkTags(bookmark)
 }
 
+fun validateDeleteBookmarkRequest(bookmarkId: String?) {
+    validationAssert(!bookmarkId.isNullOrBlank(), "Bookmark id must not be null.")
+}
+
 fun validateListBookmarkRequest(pageSize: Int, pageToken: String) {
     validationAssert(pageSize > 0, "Page Size must be positive integer.")
 

@@ -1,5 +1,6 @@
 package com.yuanchenxi95.twig.controllers
 
+import com.google.common.truth.Truth
 import com.google.common.truth.extensions.proto.ProtoTruth
 import com.yuanchenxi95.protobuf.protobuf.api.TwigApiError
 import com.yuanchenxi95.twig.AbstractTestBase
@@ -12,7 +13,9 @@ import com.yuanchenxi95.twig.protobuf.api.*
 import com.yuanchenxi95.twig.repositories.BookmarkRepository
 import com.yuanchenxi95.twig.utils.getResponse
 import com.yuanchenxi95.twig.utils.reactorutils.parallelExecuteWithLimit
+import com.yuanchenxi95.twig.utils.setUpBookmarkData
 import com.yuanchenxi95.twig.utils.setUpTestData
+import com.yuanchenxi95.twig.utils.setUpUrlData
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -22,6 +25,7 @@ import org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDeta
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.redis.core.ReactiveRedisTemplate
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpHeaders.AUTHORIZATION
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -253,6 +257,33 @@ class BookmarkControllerWebClientTests : AbstractTestBase() {
                         )
                     )
                 assertThat(it.nextPageToken).isEmpty()
+            }
+            .verifyComplete()
+    }
+
+    @Test
+    fun `delete bookmark should success`() {
+        setUpUrlData(template).block()
+        setUpBookmarkData(template).block()
+
+        val responseSpec = client.delete()
+            .uri(RequestMappingValues.DELETE_BOOKMARK, STORED_BOOKMARK_1.id)
+            .cookies {
+                it.add(HttpHeaders.AUTHORIZATION, STORED_SESSION_1.id)
+            }
+            .exchange()
+            .expectStatus()
+            .isOk
+
+        StepVerifier.create(getResponse(responseSpec, DeleteBookmarkResponse.getDefaultInstance()))
+            .assertNext {
+                Truth.assertThat(it).isEqualTo(deleteBookmarkResponse { })
+            }
+            .verifyComplete()
+
+        StepVerifier.create(bookmarkRepository.findAll().collectList())
+            .assertNext {
+                Truth.assertThat(it.size).isEqualTo(0)
             }
             .verifyComplete()
     }

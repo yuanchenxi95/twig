@@ -8,5 +8,10 @@ export const API_REQUEST_MAPPING = {
 
     // BOOKMARKS
     CREATE_BOOKMARK: '/api/bookmarks',
-    UPDATE_TAG: (bookmarkId: string) => `/api/bookmarks/${bookmarkId}`,
+    LIST_BOOKMARK: (pageSize?: number | null, pageToken?: string | null) =>
+        `/api/bookmarks?page_size=${pageSize ?? ''}&page_token=${
+            pageToken ?? ''
+        }`,
+    UPDATE_BOOKMARK: (bookmarkId: string) => `/api/bookmarks/${bookmarkId}`,
+    DELETE_BOOKMARK: (bookmarkId: string) => `/api/bookmarks/${bookmarkId}`,
 };

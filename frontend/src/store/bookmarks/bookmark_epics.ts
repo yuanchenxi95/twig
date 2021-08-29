@@ -7,6 +7,7 @@ import { Dependencies } from '../dependencies';
 import {
     BookmarkActionType,
     bookmarkCreateAsyncAction,
+    bookmarkDeleteAsyncAction,
     bookmarkListAsyncAction,
 } from './bookmark_actions';
 import { BookmarkRootState } from './bookmark_reducers';
@@ -27,11 +28,53 @@ export const createBookmarkEpic: Epic<
                 catchError((error: TwigApiError) =>
                     of(
                         bookmarkCreateAsyncAction.failure(error),
-                        bookmarkListAsyncAction.request(),
+                        bookmarkListAsyncAction.request({}),
                     ),
                 ),
             ),
         ),
     );
 
-export const bookmarkEpics = [createBookmarkEpic];
+export const listBookmarkEpic: Epic<
+    BookmarkActionType,
+    BookmarkActionType,
+    BookmarkRootState,
+    Dependencies
+> = (action$, state$, { persistence }) =>
+    action$.pipe(
+        filter(isActionOf(bookmarkListAsyncAction.request)),
+        switchMap(({ payload: listBookmarkRequest }) =>
+            from(
+                persistence.bookmarksPersistence.list(listBookmarkRequest),
+            ).pipe(
+                map((response) => bookmarkListAsyncAction.success(response)),
+                catchError((error: TwigApiError) =>
+                    of(bookmarkListAsyncAction.failure(error)),
+                ),
+            ),
+        ),
+    );
+
+export const deleteBookmarkEpic: Epic<
+    BookmarkActionType,
+    BookmarkActionType,
+    BookmarkRootState,
+    Dependencies
+> = (action$, state$, { persistence }) =>
+    action$.pipe(
+        filter(isActionOf(bookmarkDeleteAsyncAction.request)),
+        switchMap(({ payload: bookmarkId }) =>
+            from(persistence.bookmarksPersistence.delete(bookmarkId)).pipe(
+                map(() => bookmarkDeleteAsyncAction.success(bookmarkId)),
+                catchError((error: TwigApiError) =>
+                    of(bookmarkDeleteAsyncAction.failure(error)),
+                ),
+            ),
+        ),
+    );
+
+export const bookmarkEpics = [
+    createBookmarkEpic,
+    listBookmarkEpic,
+    deleteBookmarkEpic,
+];

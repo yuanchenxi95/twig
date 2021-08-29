@@ -150,9 +150,15 @@ class ListBookmarkProducerModule : ProducerModule<ListBookmarkResponse> {
 
         override fun execute(): Mono<ListBookmarkResponse> {
             return transactionRunner().map {
-                listBookmarkResponse {
-                    bookmarks.addAll(it.first)
-                    nextPageToken = it.second
+                if (it.second.isEmpty()) {
+                    listBookmarkResponse {
+                        bookmarks.addAll(it.first)
+                    }
+                } else {
+                    listBookmarkResponse {
+                        bookmarks.addAll(it.first)
+                        nextPageToken = it.second!!
+                    }
                 }
             }
         }
