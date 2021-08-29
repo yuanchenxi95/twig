@@ -23,10 +23,18 @@ message CreateBookmarkResponse {
     Bookmark bookmark = 1;
 }
 
+message ListBookmarkRequest {
+    optional int32 page_size = 1;
+    optional string page_token = 2;
+}
+
 message ListBookmarkResponse {
     repeated Bookmark bookmarks = 1;
 
-    string next_page_token = 2;
+    optional string next_page_token = 2;
+}
+
+message DeleteBookmarkResponse {
 }
 
 message UpdateBookmarkRequest {

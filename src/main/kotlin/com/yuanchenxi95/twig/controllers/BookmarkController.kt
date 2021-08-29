@@ -3,10 +3,12 @@ package com.yuanchenxi95.twig.controllers
 import com.yuanchenxi95.twig.constants.RequestMappingValues
 import com.yuanchenxi95.twig.framework.securities.TwigAuthenticationToken
 import com.yuanchenxi95.twig.producermodules.bookmarks.CreateBookmarkProducerModule
+import com.yuanchenxi95.twig.producermodules.bookmarks.DeleteBookmarkProducerModule
 import com.yuanchenxi95.twig.producermodules.bookmarks.ListBookmarkProducerModule
 import com.yuanchenxi95.twig.producermodules.bookmarks.UpdateBookmarkProducerModule
 import com.yuanchenxi95.twig.protobuf.api.*
 import com.yuanchenxi95.twig.validators.validateCreateBookmarkRequest
+import com.yuanchenxi95.twig.validators.validateDeleteBookmarkRequest
 import com.yuanchenxi95.twig.validators.validateListBookmarkRequest
 import com.yuanchenxi95.twig.validators.validateUpdateBookmarkRequest
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,6 +30,9 @@ class BookmarkController {
 
     @Autowired
     private lateinit var listBookmarkProducerModule: ListBookmarkProducerModule
+
+    @Autowired
+    private lateinit var deleteBookmarkProducerModule: DeleteBookmarkProducerModule
 
     @PostMapping(RequestMappingValues.CREATE_BOOKMARK)
     fun createBookmark(
@@ -60,5 +65,14 @@ class BookmarkController {
     ): Mono<UpdateBookmarkResponse> {
         validateUpdateBookmarkRequest(request, bookmarkId)
         return updateBookmarkProducerModule.Executor(request, bookmarkId, authentication).execute()
+    }
+
+    @DeleteMapping(RequestMappingValues.DELETE_BOOKMARK)
+    fun deleteBookmarks(
+        @PathVariable(value = RequestMappingValues.BOOKMARK_ID) bookmarkId: String,
+        authentication: TwigAuthenticationToken
+    ): Mono<DeleteBookmarkResponse> {
+        validateDeleteBookmarkRequest(bookmarkId)
+        return deleteBookmarkProducerModule.Executor(bookmarkId, authentication).execute()
     }
 }

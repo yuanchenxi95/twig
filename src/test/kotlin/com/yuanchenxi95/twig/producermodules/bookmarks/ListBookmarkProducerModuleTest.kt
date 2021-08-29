@@ -72,7 +72,6 @@ class ListBookmarkProducerModuleTest : AbstractTestBase() {
                     listBookmarkResponse {
                         bookmarks.add(API_BOOKMARK_1)
                         bookmarks.add(API_BOOKMARK_3)
-                        nextPageToken = ""
                     }
                 )
             }
@@ -126,7 +125,6 @@ class ListBookmarkProducerModuleTest : AbstractTestBase() {
                                 tags.add(STORED_TAG_1.tagName)
                             }
                         )
-                        nextPageToken = ""
                     }
                 )
             }

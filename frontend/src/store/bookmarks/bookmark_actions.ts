@@ -1,6 +1,7 @@
 import {
     CreateBookmarkRequest,
     CreateBookmarkResponse,
+    ListBookmarkRequest,
     ListBookmarkResponse,
 } from 'proto/api/bookmark';
 import { TwigApiError } from 'proto/api/twig_api_error';
@@ -15,7 +16,7 @@ export const bookmarkListAsyncAction = createAsyncAction(
     `${BOOKMARK_LIST}_REQUEST`,
     `${BOOKMARK_LIST}_SUCCESS`,
     `${BOOKMARK_LIST}_FAILED`,
-)<void, ListBookmarkResponse, TwigApiError>();
+)<ListBookmarkRequest, ListBookmarkResponse, TwigApiError>();
 
 export const bookmarkDeleteAsyncAction = createAsyncAction(
     `${BOOKMARK_DELETE}_REQUEST`,
