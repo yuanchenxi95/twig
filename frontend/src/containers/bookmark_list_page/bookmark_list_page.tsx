@@ -6,7 +6,9 @@ export function BookmarkListPage() {
     return (
         <div className={'app-page-container'}>
             <PageHeader className="app-page-header" title="Bookmark list" />
-            <BookmarkList />
+            <div className={'app-page-body'}>
+                <BookmarkList />
+            </div>
         </div>
     );
 }

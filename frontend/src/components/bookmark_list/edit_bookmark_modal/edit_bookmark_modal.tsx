@@ -19,8 +19,14 @@ import {
 } from '../../../common/edit_type';
 import { LoadingState } from '../../../common/loading_state';
 import { showInfoNotification } from '../../../common/notification';
-import { bookmarkCreateAsyncAction } from '../../../store/bookmarks/bookmark_actions';
-import { selectBookmarkLoadingState } from '../../../store/bookmarks/bookmark_selectors';
+import {
+    bookmarkCreateAsyncAction,
+    bookmarkUpdateAsyncAction,
+} from '../../../store/bookmarks/bookmark_actions';
+import {
+    selectBookmarkLoadingState,
+    selectIsBookmarkLoading,
+} from '../../../store/bookmarks/bookmark_selectors';
 import { selectTagList } from '../../../store/tags/tag_selectors';
 
 enum EditBookmarkFormField {
@@ -40,6 +46,8 @@ export const EditBookmarkModal: React.FC<EditBookmarkModalProps> = ({
 }) => {
     const [visible, setVisible] = useState(false);
     const [editType, setEditType] = useState(EditType.CREATE);
+    const [passedInBookmark, setBookmark] = useState<Bookmark | null>(null);
+    const isBookmarkLoading = useSelector(selectIsBookmarkLoading);
     const [form] = useForm();
 
     const dispatch = useDispatch();
@@ -61,6 +69,7 @@ export const EditBookmarkModal: React.FC<EditBookmarkModalProps> = ({
                 [EditBookmarkFormField.TAGS]: bookmark.tags,
             });
             setEditType(getEditType(bookmark));
+            setBookmark(bookmark);
         });
 
         // OnDestroy
@@ -81,12 +90,7 @@ export const EditBookmarkModal: React.FC<EditBookmarkModalProps> = ({
         handleClose(false);
     };
 
-    const handleOk = async () => {
-        const values = await form.validateFields();
-        const bookmarkToReturn = Bookmark.fromPartial({});
-        bookmarkToReturn.url = values[EditBookmarkFormField.BOOKMARK_URL];
-        bookmarkToReturn.displayName = values[EditBookmarkFormField.NAME];
-        bookmarkToReturn.tags = values[EditBookmarkFormField.TAGS];
+    const createBookmark = (bookmarkToReturn: Bookmark) => {
         const createBookmarkRequest: CreateBookmarkRequest = {
             bookmark: bookmarkToReturn,
         };
@@ -101,20 +105,49 @@ export const EditBookmarkModal: React.FC<EditBookmarkModalProps> = ({
             )
             .subscribe((loadingState) => {
                 if (loadingState === LoadingState.SUCCEEDED) {
-                    showInfoNotification(
-                        `Bookmark ${
-                            editType === EditType.CREATE ? 'created' : 'updated'
-                        } successfully.`,
-                    );
+                    showInfoNotification('Bookmark created successfully.');
                     handleClose(true);
                 }
             });
+    };
+
+    const updateBookmark = (bookmarkToUpdate: Bookmark) => {
+        dispatch(bookmarkUpdateAsyncAction.request(bookmarkToUpdate));
+
+        from(store)
+            .pipe(
+                map((state) => selectBookmarkLoadingState(state)),
+                distinctUntilChanged(),
+                filter((loadingState) => loadingState !== LoadingState.LOADING),
+                take(1),
+            )
+            .subscribe((loadingState) => {
+                if (loadingState === LoadingState.SUCCEEDED) {
+                    showInfoNotification('Bookmark updated successfully.');
+                    handleClose(true);
+                }
+            });
+    };
+
+    const handleOk = async () => {
+        const values = await form.validateFields();
+        const bookmark = Bookmark.fromPartial({});
+        bookmark.url = values[EditBookmarkFormField.BOOKMARK_URL];
+        bookmark.displayName = values[EditBookmarkFormField.NAME];
+        bookmark.tags = values[EditBookmarkFormField.TAGS];
+        bookmark.id = passedInBookmark!.id;
+        if (editType === EditType.EDIT) {
+            updateBookmark(bookmark);
+        } else {
+            createBookmark(bookmark);
+        }
     };
 
     return (
         <>
             <Modal
                 centered
+                confirmLoading={isBookmarkLoading}
                 onCancel={handleCancel}
                 onOk={handleOk}
                 okText={getEditTypeDisplayName(editType)}
@@ -132,7 +165,10 @@ export const EditBookmarkModal: React.FC<EditBookmarkModalProps> = ({
                             },
                         ]}
                     >
-                        <Input autoComplete={'off'} />
+                        <Input
+                            disabled={editType === EditType.EDIT}
+                            autoComplete={'off'}
+                        />
                     </Form.Item>
                     <Form.Item label={'Name'} name={EditBookmarkFormField.NAME}>
                         <Input autoComplete={'off'} />

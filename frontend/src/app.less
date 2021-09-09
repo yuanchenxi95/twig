@@ -4,3 +4,27 @@
 
 // Customize antd styles.
 @component-background: @app-layout-background;
+
+.app-table-header-action {
+  justify-content: flex-end;
+  margin-bottom: @default-margin;
+  width: 100%;
+}
+
+.app-page-container {
+  border: @border-width-base @border-style-base @border-color-base;
+  height: 100%;
+}
+
+@app-page-header-height: 73px;
+
+.app-page-header {
+  height: @app-page-header-height;
+  border-bottom: @border-width-base @border-style-base @border-color-base;
+}
+
+.app-page-body {
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: calc(100% - @app-page-header-height);
+}

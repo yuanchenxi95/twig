@@ -45,7 +45,7 @@ class BookmarkController {
 
     @GetMapping(RequestMappingValues.LIST_BOOKMARK)
     fun listBookmarks(
-        @RequestParam(value = "page_size", required = false, defaultValue = "50") pageSize: Int,
+        @RequestParam(value = "page_size", required = false, defaultValue = "10") pageSize: Int,
         @RequestParam(value = "page_token", required = false, defaultValue = "") pageToken: String,
         authentication: TwigAuthenticationToken
     ): Mono<ListBookmarkResponse> {

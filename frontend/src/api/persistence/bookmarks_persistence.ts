@@ -1,9 +1,12 @@
 import {
+    Bookmark,
     CreateBookmarkRequest,
     CreateBookmarkResponse,
     DeleteBookmarkResponse,
     ListBookmarkRequest,
     ListBookmarkResponse,
+    UpdateBookmarkRequest,
+    UpdateBookmarkResponse,
 } from 'proto/api/bookmark';
 import { map, Observable } from 'rxjs';
 import { AjaxClient } from '../ajax/ajax_client';
@@ -47,6 +50,26 @@ export class BookmarksPersistence {
             )
             .pipe(
                 map((response) => DeleteBookmarkResponse.fromPartial(response)),
+            );
+    }
+
+    update(
+        bookmarkId: string,
+        bookmark: Bookmark,
+    ): Observable<UpdateBookmarkResponse> {
+        const updateBookmarkRequest: UpdateBookmarkRequest = {
+            bookmark,
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            updateMask: 'tags,display_name',
+        };
+        return this.ajaxClient
+            .put<UpdateBookmarkRequest, UpdateBookmarkResponse>(
+                API_REQUEST_MAPPING.UPDATE_BOOKMARK(bookmarkId),
+                updateBookmarkRequest,
+            )
+            .pipe(
+                map((response) => UpdateBookmarkResponse.fromPartial(response)),
             );
     }
 }
