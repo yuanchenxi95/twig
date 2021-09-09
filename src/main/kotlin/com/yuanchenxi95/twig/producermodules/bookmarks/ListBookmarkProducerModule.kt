@@ -157,7 +157,7 @@ class ListBookmarkProducerModule : ProducerModule<ListBookmarkResponse> {
                 } else {
                     listBookmarkResponse {
                         bookmarks.addAll(it.first)
-                        nextPageToken = it.second!!
+                        nextPageToken = it.second
                     }
                 }
             }

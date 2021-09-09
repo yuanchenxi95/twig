@@ -9,6 +9,7 @@ import {
     bookmarkCreateAsyncAction,
     bookmarkDeleteAsyncAction,
     bookmarkListAsyncAction,
+    bookmarkUpdateAsyncAction,
 } from './bookmark_actions';
 import { BookmarkRootState } from './bookmark_reducers';
 
@@ -47,7 +48,12 @@ export const listBookmarkEpic: Epic<
             from(
                 persistence.bookmarksPersistence.list(listBookmarkRequest),
             ).pipe(
-                map((response) => bookmarkListAsyncAction.success(response)),
+                map((response) =>
+                    bookmarkListAsyncAction.success({
+                        nextPageToken: listBookmarkRequest.pageToken ?? null,
+                        listBookmarkResponse: response,
+                    }),
+                ),
                 catchError((error: TwigApiError) =>
                     of(bookmarkListAsyncAction.failure(error)),
                 ),
@@ -73,8 +79,31 @@ export const deleteBookmarkEpic: Epic<
         ),
     );
 
+export const updateBookmarkEpic: Epic<
+    BookmarkActionType,
+    BookmarkActionType,
+    BookmarkRootState,
+    Dependencies
+> = (action$, state$, { persistence }) =>
+    action$.pipe(
+        filter(isActionOf(bookmarkUpdateAsyncAction.request)),
+        switchMap(({ payload: bookmark }) =>
+            from(
+                persistence.bookmarksPersistence.update(bookmark.id, bookmark),
+            ).pipe(
+                map((updateBookmarkResponse) =>
+                    bookmarkUpdateAsyncAction.success(updateBookmarkResponse),
+                ),
+                catchError((error: TwigApiError) =>
+                    of(bookmarkDeleteAsyncAction.failure(error)),
+                ),
+            ),
+        ),
+    );
+
 export const bookmarkEpics = [
     createBookmarkEpic,
     listBookmarkEpic,
     deleteBookmarkEpic,
+    updateBookmarkEpic,
 ];

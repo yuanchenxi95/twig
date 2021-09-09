@@ -8,10 +8,12 @@ import {
     bookmarkCreateAsyncAction,
     bookmarkDeleteAsyncAction,
     bookmarkListAsyncAction,
+    bookmarkUpdateAsyncAction,
 } from './bookmark_actions';
 
 export interface BookmarkState {
     bookmarkMapById: ReadonlyMap<string, Bookmark>;
+    nextPageToken: string | null;
     loadingState: LoadingState;
 }
 
@@ -21,6 +23,7 @@ export interface BookmarkRootState {
 
 export const bookmarkState: BookmarkState = {
     bookmarkMapById: new Map<string, Bookmark>(),
+    nextPageToken: null,
     loadingState: LoadingState.IDLE,
 };
 
@@ -32,6 +35,7 @@ export const bookmarkReducer = createReducer<BookmarkState, BookmarkActionType>(
             bookmarkListAsyncAction.request,
             bookmarkDeleteAsyncAction.request,
             bookmarkCreateAsyncAction.request,
+            bookmarkUpdateAsyncAction.request,
         ],
         (state) => {
             return {
@@ -42,16 +46,20 @@ export const bookmarkReducer = createReducer<BookmarkState, BookmarkActionType>(
     )
     .handleAction(
         bookmarkListAsyncAction.success,
-        (state, { payload: listBookmarkResponse }) => {
-            const bookmarkMapById = new Map(
-                listBookmarkResponse.bookmarks.map((bookmark) => [
-                    bookmark.id,
-                    bookmark,
-                ]),
-            );
+        (state, { payload: { listBookmarkResponse, nextPageToken } }) => {
+            const bookmarkMapById = new Map<string, Bookmark>();
+            if (nextPageToken != null) {
+                for (const [id, bookmark] of state.bookmarkMapById.entries()) {
+                    bookmarkMapById.set(id, bookmark);
+                }
+            }
+            for (const bookmark of listBookmarkResponse.bookmarks) {
+                bookmarkMapById.set(bookmark.id, bookmark);
+            }
             return {
                 ...state,
                 bookmarkMapById,
+                nextPageToken: listBookmarkResponse.nextPageToken ?? null,
                 loadingState: LoadingState.SUCCEEDED,
             };
         },
@@ -81,6 +89,22 @@ export const bookmarkReducer = createReducer<BookmarkState, BookmarkActionType>(
             for (const [key, value] of state.bookmarkMapById.entries()) {
                 bookmarkMapById.set(key, value);
             }
+            return {
+                ...state,
+                bookmarkMapById,
+                loadingState: LoadingState.SUCCEEDED,
+            };
+        },
+    )
+    .handleAction(
+        bookmarkUpdateAsyncAction.success,
+        (state, { payload: updateBookmarkResponse }) => {
+            const { bookmark } = updateBookmarkResponse;
+            if (bookmark == null) {
+                return state;
+            }
+            const bookmarkMapById = new Map(state.bookmarkMapById);
+            bookmarkMapById.set(bookmark.id, bookmark);
             return {
                 ...state,
                 bookmarkMapById,

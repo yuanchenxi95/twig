@@ -1,25 +1,15 @@
 @import '~antd/lib/style/themes/default.less';
+@import '~antd/lib/style/color/colors';
 
 @default-white: white;
 @default-black: black;
 
+@default-blue: @blue-base;
+
+@default-margin: 16px;
+
 @app-layout-background: #fefefe;
 
-.app-table-container {
-  padding: 16px;
-}
-
-.app-table-header-action {
-  justify-content: flex-end;
-  margin-bottom: 16px;
-  width: 100%;
-}
-
-.app-page-container {
-  border: @border-width-base @border-style-base @border-color-base;
-  height: 100%;
-}
-
-.app-page-header {
-  border-bottom: @border-width-base @border-style-base @border-color-base;
+#app-table-container {
+  padding: @default-margin;
 }

@@ -111,15 +111,30 @@ class UpdateBookmarkProducerModule : ProducerModule<UpdateBookmarkResponse> {
                 updateOperations.add(updateTags())
             }
 
-            // TODO(yuanchenxi95) update tags
-
             return parallelExecuteWithLimit(updateOperations).then(
-                getBookmark().map {
+                Mono.defer {
+                    if (fieldMaskTree.isfieldMaskExist(
+                            request.bookmark,
+                            listOf(Bookmark.DISPLAY_NAME_FIELD_NUMBER)
+                        )
+                    ) {
+                        return@defer storedBookmarkService.selectOneBookmark(
+                            authentication.getUserId(),
+                            bookmarkId
+                        )
+                            .flatMap { existingBookmark ->
+                                r2dbcEntityTemplate.update(existingBookmark.copy(displayName = bookmarkToBeUpdated.displayName))
+                            }
+                    } else {
+                        return@defer Mono.empty()
+                    }
+                }
+            ).then(getBookmark())
+                .map {
                     updateBookmarkResponse {
                         bookmark = it
                     }
                 }
-            )
         }
 
         private fun startUpdateBookmark(): Mono<UpdateBookmarkResponse> {

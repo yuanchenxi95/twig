@@ -28,3 +28,8 @@ export const selectBookmarkLoadingState = createSelector(
     selectBookmarkState,
     (state) => state.loadingState,
 );
+
+export const selectBookmarkListNextPageToken = createSelector(
+    selectBookmarkState,
+    (state) => state.nextPageToken,
+);
