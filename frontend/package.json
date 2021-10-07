@@ -47,7 +47,7 @@
     "dependencies": {
         "@ant-design/icons": "^4.6.2",
         "antd": "^4.16.7",
-        "axios": "^0.21.1",
+        "axios": "^0.21.2",
         "connected-react-router": "^6.9.1",
         "history": "^4.10.1",
         "protobufjs": "^6.11.2",
